@@ -1,0 +1,25 @@
+{
+  "name": "wx-jy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "jy.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "cross-env mode=development webpack-dev-server",
+    "build": "cross-env mode=production  webpack",
+    "prepublish": "npm run build"
+  },
+  "author": "tianxiangbing",
+  "license": "ISC",
+  "devDependencies": {
+    "awesome-typescript-loader": "^5.2.1",
+    "cross-env": "^5.2.1",
+    "source-map-loader": "^0.2.4",
+    "typescript": "^3.6.3",
+    "webpack-cli": "^3.3.8"
+  },
+  "dependencies": {
+    "webpack": "^4.39.3",
+    "webpack-dev-server": "^3.8.0"
+  }
+}
