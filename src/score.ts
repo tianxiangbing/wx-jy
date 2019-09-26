@@ -1,7 +1,7 @@
 //// <reference path="iScreen.ts" />
 import IScreen from './iScreen'
 export default class Score implements IScreen {
-    elem: HTMLElement;
+    elem: any;
     right: string;
     top: string;
     constructor(public text?: string) {

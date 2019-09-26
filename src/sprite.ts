@@ -27,7 +27,7 @@ export default class Sprite {
     }
     getImg(url: string): void {
         //地址转换成img对象 
-        this.img = new Image();
+        // this.img = new Image();
         this.img.src = url;
 
         // this.img = document.createElement('img');

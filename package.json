@@ -5,8 +5,9 @@
   "main": "jy.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "cross-env mode=development webpack-dev-server",
+    "dev": "cross-env mode=development webpack --watch",
     "build": "cross-env mode=production  webpack",
+    "compile": "npm run build",
     "prepublish": "npm run build"
   },
   "author": "tianxiangbing",
