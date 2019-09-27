@@ -1,19 +1,19 @@
 //描述设计
 //// <reference path="iScreen.ts" />
 import IScreen from './iScreen'
+import { Stage } from '.';
+import lib from './lib';
+
 export default class Title  implements  IScreen{
-    elem: HTMLElement;
-    constructor(public title:string) {
+    constructor(public title:string,private stage:Stage) {
         console.log(arguments)
     }
-    create(callback:Function) {
-        this.elem = document.createElement('div');
-        this.elem.className = "title";
-        this.elem.style.position= 'absolute';
-        this.elem.innerHTML = this.title;
-        return this.elem;
+    create(resolve) {
+        lib.write(this.stage,this.title)
+        lib.waitMoment(3000);
+        resolve();
     }
     remove(){
-        this.elem.parentNode.removeChild(this.elem);
+        this.stage.clear();
     }
 }

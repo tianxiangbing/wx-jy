@@ -1,5 +1,4 @@
 export default interface IScreen{
-    elem:HTMLElement;
-    create(callback?:Function):HTMLElement;
+    create(resolve?:Function):void;
     remove():void
 }

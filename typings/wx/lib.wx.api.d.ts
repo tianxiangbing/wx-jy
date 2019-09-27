@@ -4940,9 +4940,9 @@ ctx.draw()
 * ![]((canvas/un-reserve.png)) */
     draw(
       /** 本次绘制是否接着上一次绘制。即 reserve 参数为 false，则在本次调用绘制之前 native 层会先清空画布再继续绘制；若 reserve 参数为 true，则保留当前画布上的内容，本次调用 drawCanvas 绘制的内容覆盖在上面，默认 false。 */
-      reserve: boolean,
+      reserve?: boolean,
       /** 绘制完成后执行的回调函数 */
-      callback: Function,
+      callback?: Function,
     ): void;
     /** [CanvasContext.draw(boolean reserve, function callback)](CanvasContext.draw.md)
 *
@@ -5011,23 +5011,23 @@ wx.chooseImage({
 * ![]((canvas/draw-image.png)) */
     drawImage(
       /** 所要绘制的图片资源 */
-      imageResource: string,
+      imageResource: HTMLImageElement,
       /** 图像的左上角在目标 canvas 上 x 轴的位置 */
       dx: number,
       /** 图像的左上角在目标 canvas 上 y 轴的位置 */
       dy: number,
       /** 在目标画布上绘制图像的宽度，允许对绘制的图像进行缩放 */
-      dWidth: number,
+      dWidth?: number,
       /** 在目标画布上绘制图像的高度，允许对绘制的图像进行缩放 */
-      dHeight: number,
+      dHeight?: number,
       /** 源图像的矩形选择框的左上角 x 坐标 */
-      sx: number,
+      sx?: number,
       /** 源图像的矩形选择框的左上角 y 坐标 */
-      sy: number,
+      sy?: number,
       /** 源图像的矩形选择框的宽度 */
-      sWidth: number,
+      sWidth?: number,
       /** 源图像的矩形选择框的高度 */
-      sHeight: number,
+      sHeight?: number,
     ): void;
     /** [CanvasContext.fill()](CanvasContext.fill.md)
 *
@@ -7248,6 +7248,9 @@ worker.postMessage({
     toDataURL():string
   }
   interface Wx {
+      createImage():HTMLImageElement;
+      offTouchStart();
+      onTouchStart(arg0: (e) => void);
       createCanvas():Canvas;
     /** [Object wx.getAccountInfoSync()](wx.getAccountInfoSync.md)
 *

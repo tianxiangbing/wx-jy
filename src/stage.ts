@@ -9,11 +9,9 @@ export default class Stage {
         this.context.fillStyle=this.style;
         this.context.fillRect(0,0,this.width,this.height)
     }
+    //清空布景
     clear(){
         this.context.clearRect(0,0,this.width,this.height);
-    }
-    //绑定事件回调
-    bindEvent(callback?: Function) {
-      
+        this.draw();
     }
 }

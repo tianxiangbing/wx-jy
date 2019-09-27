@@ -7,7 +7,6 @@ import Score from './score';
 import Sprite from './sprite';
 import Stage from './stage';
 import Title from './title';
-import WriteText from './writeText';
 export {
     JY,
     Control,
@@ -17,6 +16,5 @@ export {
     Score,
     Sprite,
     Stage,
-    Title,
-    WriteText
+    Title
 }

@@ -1,78 +1,76 @@
+import lib from "./lib";
+import { Stage } from ".";
+
 //sprite
 //形状
-export enum SHAPE{
- rect,
- circle
+export enum SHAPE {
+    rect,
+    circle
 }
-export default class Sprite {
-    ///
-    context: any;//画布对象
-    x: number = 0;//x坐标
-    y: number = 0;//y坐标
-    w: number = 0;//宽度 
-    h: number = 0;//高度
-    sw: number = 0;//剪裁的宽
-    sh: number = 0;//前裁的高
-    sx: number = 0;//剪裁的x
-    sy: number = 0;//前裁的y
-    r:number = 0 ;//半径
-    img: any;//图像地址
-    shape:SHAPE = SHAPE.rect;//默认方形
-    constructor(context: any, url: string) {
-        this.getImg(url);
-        this.context = context;
-    }
-    setImg(url: string) {
-        this.getImg(url);
-    }
-    getImg(url: string): void {
-        //地址转换成img对象 
-        // this.img = new Image();
-        this.img.src = url;
+interface SP {
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    visible: boolean,
+    type: SHAPE
+}
+/**
+ * 游戏基础的精灵类
+ */
+export default class Sprite implements SP {
+    width: number;
+    height: number;
+    x: number;
+    y: number;
+    visible: boolean;
+    type:SHAPE = SHAPE.rect;
+    constructor(public imgSrc = '', width = 0, height = 0, x = 0, y = 0) {
 
-        // this.img = document.createElement('img');
-        // this.img.src = url;
-        // console.log(this.img.readyState)
-        // this.img.onreadystatechange=function(){
-        //     console.log(222,this.img.readyState)
-        // }
-        this.img.onload = function () {
-            console.log('loaded')
-        }
-        // this.img = document.createElement('img');
-        // this.img.src = url;
+        this.width = width
+        this.height = height
+
+        this.x = x
+        this.y = y
+
+        this.visible = true
     }
-    setSize(w?:number, h?:number) {
-        this.w = w||this.w;
-        this.h = h||this.h;
-        this.r = this.h/2;
+
+    /**
+     * 将精灵图绘制在canvas上
+     */
+    draw(stage:Stage) {
+        if (!this.visible)
+            return
+        lib.draw(
+            stage,
+            this.imgSrc,
+            this.x,
+            this.y,
+            this.width,
+            this.height
+        )
     }
-    getCenter(){
-        //圆心位置
-        return [this.x +this.r,this.y +this.r];
+
+    /**
+     * 简单的碰撞检测定义：
+     * 另一个精灵的中心点处于本精灵所在的矩形内即可
+     * @param{Sprite} sp: Sptite的实例
+     */
+    hits(sp: any) {
+        let spX = sp.x + sp.width / 2
+        let spY = sp.y + sp.height / 2
+
+        if (!this.visible || !sp.visible)
+            return false
+
+        return !!(spX >= this.x
+            && spX <= this.x + this.width
+            && spY >= this.y
+            && spY <= this.y + this.height)
     }
-    setCutSize(sw:number, sh:number) {
-        this.sw = sw;
-        this.sh = sh;
-    }
-    setPosition(x:number, y:number) {
-        this.x = x;
-        this.y = y;
-    }
-    draw(angle?:number) {
-        this.context.save();
-        if(angle){
-            this.context.translate(this.x+this.r ,this.y+this.r)
-            this.context.rotate(angle);
-            this.context.translate(-(this.x+this.r) ,-(this.y+this.r));
-        } 
-        if (this.sw && this.sh) {
-            this.context.drawImage(this.img, this.sx, this.sy, this.sw, this.sh, this.x, this.y, this.w, this.h);
-        } else {
-            //不需要剪切
-            this.context.drawImage(this.img,Math.round(this.x), Math.round(this.y), this.w, this.h);
-        }
-        // this.context.drawImage(this.img,10,10);
-        this.context.restore();
+    touchHits(e){
+        let touch = e.touches[0];
+        return this.hits({x:touch.clientX,y:touch.clientY,width:0,height:0,visible:true});
     }
 }

@@ -6,18 +6,15 @@
 /// <reference path="stage.ts" />
 /// <reference path="control.ts" />
 /// <reference path="score.ts" />
-/// <reference path="writeText.ts" />
 */
-import Sprite,{SHAPE} from './sprite';
+import Sprite, { SHAPE } from './sprite';
 import Title from './title';
 import Descript from './descript';
 import GameOver from './gameOver';
 import Stage from './stage';
 import Control from './control';
 import Score from './score';
-import WriteText from './writeText';
 import lib from './lib';
-
 
 //游戏主框架
 export enum STATE {
@@ -26,58 +23,47 @@ export enum STATE {
     descript,
     newGame,
     running,
-    pause,
-    levelUp,
-    die,
     gameOver
 }
 export default class JY {
     private func: Function = new Function;
     private timer: any;
-    private aniId :number;
+    private aniId: number;
     private currentState: STATE;
+    private ispause: boolean = false;//是否处于暂停状态
     protected interval: number = 10;
     protected context: wx.CanvasContext;
     protected scoreScreen: Score;
-
-    files: any;
-    constructor( public stage: Stage, public titleStage?: Title, public descriptStage?: Descript, public gameOverStage?: GameOver, public controlStage?: Control) {
+    constructor(public stage: Stage, public titleStage?: Title, public descriptStage?: Descript, public gameOverStage?: GameOver, public controlStage?: Control) {
+        this.context = stage.context;
         this.setup();
     }
     setup() {
-        this.freshFrame();
+        this.stage.draw();
         this.currentState = STATE.loading;
         this.setState(STATE.loading);
+        this.loop();
     }
     // 实现游戏帧循环
-    freshFrame(){
-        // console.log(+new Date())
+    async loop() {
+        if (!this.ispause) {
+            await this.func();
+        }
         this.aniId = window.requestAnimationFrame(
-            this.freshFrame.bind(this)
+            this.loop.bind(this)
         )
-    }
-    run() {
-        console.log('run')
-        //this.func();
-        this.descriptStage.remove();
-        this.controlStage && this.createControl();
-        this.setState(STATE.newGame);
     }
     //分数面板
     scoreInit() {
         this.scoreScreen = new Score('--');
-        // this.view.appendChild(this.scoreScreen.create());
     }
     createControl() {
-        // this.view.appendChild(this.controlStage.create());
     }
     //新的开始
     protected newGame() {
         //游戏开始，清空场景
         //打开计时器
-        this.scoreInit();
         this.setState(STATE.running);
-        this.startTimer();
     }
     //结束 
     protected over() {
@@ -85,11 +71,13 @@ export default class JY {
     }
     //暂停
     protected pause() {
-        this.stopTimer();
+        this.ispause = true;
+        window.cancelAnimationFrame(this.aniId);
     }
     //暂停后的继续
     protected play() {
-        this.startTimer();
+        this.ispause = false;
+        this.loop();
     }
     //游戏结束
     protected gameOver() {
@@ -98,62 +86,73 @@ export default class JY {
         console.log('gameOver');
         // this.scoreScreen.remove();
         this.stage.clear();
-        this.controlStage && this.controlStage.remove();
-        this.stopTimer();
-        let gameOver = this.gameOverStage.create(function () {
-            this.gameOverStage.remove();
-            this.setState(STATE.descript);
-        }.bind(this));
-        // this.view.appendChild(gameOver);
+        this.showGameOver();
     }
-    //停止刷新
-    stopTimer() {
-        clearInterval(this.timer);
-    }
-    //刷新帧
-    startTimer() {
-        let _this = this;
-        this.timer = setInterval(function () {
-            _this.func.bind(_this)();
-        }, this.interval)
+    //结束画面
+    async showGameOver() {
+        console.log('game  over...')
+        await lib.waitMoment(3000);
     }
     //游戏中的
     running() {
-        // console.log('running...')
-        
-        this.context.clearRect(0, 0, this.stage.width, this.stage.height);
+        console.log('running...')
     }
-    async loading(){
+    async loading() {
         console.log('loading....')
         await this.showLoading();
         this.setState(STATE.title)
     }
-    async showLoading(){
-        await lib.waitMoment(3000);
+    showLoading() {
+        lib.write(this.stage, '正在加载中')
+        return lib.waitMoment(3000);
     }
-    title(){
-
+    async title() {
+        console.log('title....');
+        await this.showTitle();
+        this.setState(STATE.descript);
+    }
+    showTitle() {
+        // this.titleStage.create()
+        // return lib.waitMoment(3000);
+        return new Promise(resolve => {
+            this.titleStage.create(resolve);
+        });
+    }
+    async descript() {
+        console.log('descript...');
+        await this.showDescript();
+        this.setState(STATE.newGame);
+    }
+    showDescript() {
+        return new Promise(resolve => {
+            this.descriptStage.create(resolve);
+        });
+        // return lib.waitMoment(3000);
+    }
+    proxy(stageFunc: Function) {
+        this.stage.clear();
+        return stageFunc.bind(this);
     }
     //检查状态
     checkState() {
         switch (this.currentState) {
             case STATE.loading:
-                this.func = this.loading;
+                this.func = this.proxy(this.loading);
                 break;
             case STATE.title:
-                this.func = this.title;
+                this.func = this.proxy(this.title);
                 break;
             case STATE.descript:
-                // this.func = this.descript;
+                this.func = this.proxy(this.descript);
                 break;
             case STATE.newGame:
-                this.func = this.newGame;
+                this.func = this.proxy(this.newGame);
                 break;
             case STATE.running:
-                this.func = this.running;
+                this.func = this.proxy(this.running);
                 break;
             case STATE.gameOver:
-                this.func = this.gameOver;
+                this.func = this.proxy(this.gameOver);
             default:
                 break;
         }
