@@ -25,7 +25,7 @@ export default class Sprite implements SP {
     y: number;
     visible: boolean;
     type:SHAPE = SHAPE.rect;
-    constructor(public imgSrc = '', width = 0, height = 0, x = 0, y = 0) {
+    constructor(public stage:Stage,public imgSrc = '', width = 0, height = 0, x = 0, y = 0) {
 
         this.width = width
         this.height = height
@@ -39,11 +39,11 @@ export default class Sprite implements SP {
     /**
      * 将精灵图绘制在canvas上
      */
-    draw(stage:Stage) {
+    draw() {
         if (!this.visible)
             return
         lib.draw(
-            stage,
+            this.stage,
             this.imgSrc,
             this.x,
             this.y,

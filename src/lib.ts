@@ -31,13 +31,43 @@ export default {
     //导入图片
     draw(stage: Stage, img: string, dx: number, dy: number, dWidth?: number, dHeight?: number, sx?: number, sy?: number, sWidth?: number, sHeight?: number) {
         let context = stage.context;
-        let image = wx.createImage();
-        let args = Array.prototype.slice.call(arguments,2);
-        args.unshift(image);  
-        console.log(args)
-        image.onload = ()=>{
-            context.drawImage.call(context,...args);
-        }
-        image.src = img;
+        // let image = wx.createImage();
+        let image = this.caches[img];
+        let args = Array.prototype.slice.call(arguments, 2);
+        args.unshift(image);
+        console.log('draw',img)
+        // image.onload = ()=>{
+        //     context.drawImage.call(context,...args);
+        // } 
+        // image.src = img;
+        context.drawImage.call(context, ...args);
+    },
+    //取区间数的随机值
+    random(min: number, max: number) {
+        return Math.floor(Math.random() * (max - min) + min);
+    },
+    caches:{},
+    loadImages(files) {
+        // let cache = {};
+        let arr = []; 
+        return new Promise(resolve => {
+            for (let k in files) {
+                arr.push(new Promise(resolve => {
+                    let image = wx.createImage();
+                    image.onload = () => {
+                        this.caches[ files[k]] = image;
+                        resolve();
+                    }
+                    image.src = files[k];
+                })
+                )
+            }
+            return Promise.all(arr).catch(() => {
+                console.log('加载资源出错.')
+            }).then(() => {
+                console.log('加载资源完成.')
+                resolve();
+            })
+        })
     }
 }

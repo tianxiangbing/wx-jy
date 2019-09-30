@@ -1,9 +1,9 @@
 //// <reference path="iScreen.ts" />
 import IScreen from './iScreen'
 export default class Stage {
-    elem: wx.CanvasContext;
-    constructor(public context:wx.CanvasContext, public width: number, public height: number, public style?: string) {
-        
+    context: wx.CanvasContext;
+    constructor(public canvas:wx.Canvas, public width: number, public height: number, public style?: string) {
+        this.context = canvas.getContext('2d');
     }
     draw(style?:string){
         this.context.fillStyle=this.style;

@@ -34,9 +34,10 @@ export default class JY {
     protected interval: number = 10;
     protected context: wx.CanvasContext;
     protected scoreScreen: Score;
+    resources:string[]=[];
     constructor(public stage: Stage, public titleStage?: Title, public descriptStage?: Descript, public gameOverStage?: GameOver, public controlStage?: Control) {
         this.context = stage.context;
-        this.setup();
+        // this.setup();
     }
     setup() {
         this.stage.draw();
@@ -46,11 +47,15 @@ export default class JY {
     }
     // 实现游戏帧循环
     async loop() {
+        console.log('loop')
         if (!this.ispause) {
             await this.func();
         }
         this.aniId = window.requestAnimationFrame(
-            this.loop.bind(this)
+            ()=>{
+                console.log('lloop.')
+                this.loop()
+            }
         )
     }
     //分数面板
@@ -100,11 +105,12 @@ export default class JY {
     async loading() {
         console.log('loading....')
         await this.showLoading();
+        console.log('loading end...')
         this.setState(STATE.title)
     }
     showLoading() {
         lib.write(this.stage, '正在加载中')
-        return lib.waitMoment(3000);
+        return lib.loadImages(this.resources)
     }
     async title() {
         console.log('title....');

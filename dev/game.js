@@ -111,9 +111,9 @@ const jy_1 = __webpack_require__(/*! ../src/jy */ "./src/jy.ts");
 const canvas = wx.createCanvas();
 const [height, width] = [canvas.height, canvas.width];
 // console.log(canvas.height,canvas.width)
-const context = canvas.getContext('2d');
+// const context = canvas.getContext('2d');
 //创建舞台
-let stage = new index_1.Stage(context, width, height, '#FFFFFF');
+let stage = new index_1.Stage(canvas, width, height, '#FFFFFF');
 let title = new index_1.Title('打气球', stage);
 title.create = (resolve) => {
     lib_1.default.write(stage, '一起来打气球');
@@ -124,8 +124,8 @@ descript.create = (resolve) => __awaiter(void 0, void 0, void 0, function* () {
     lib_1.default.draw(stage, 'images/descript.jpg', 0, 0, stage.width, stage.height);
     // await lib.waitMoment(3000);
     //添加开始按钮的Sprite
-    let btn = new index_1.Sprite('images/btn-start.png', 100, 40, (width - 100) / 2, height - 40 - 40);
-    btn.draw(stage);
+    let btn = new index_1.Sprite(stage, 'images/btn-start.png', 100, 40, (width - 100) / 2, height - 40 - 40);
+    btn.draw();
     wx.onTouchStart((e) => {
         if (btn.touchHits(e)) {
             wx.offTouchStart();
@@ -133,7 +133,26 @@ descript.create = (resolve) => __awaiter(void 0, void 0, void 0, function* () {
         }
     });
 });
+//气球类
+class Ball extends index_1.Sprite {
+    constructor() {
+        super(...arguments);
+        this.speed = 1; //速度
+    }
+    //更新位置
+    update() {
+        this.y -= this.speed;
+        if (this.y < 0) {
+            this.visible = false;
+        }
+    }
+}
 class Game extends index_1.JY {
+    constructor() {
+        super(...arguments);
+        this.frame = 0; //帧数
+        this.ballList = []; //所有球的集合
+    }
     newGame() {
         wx.onTouchStart(e => {
             let { clientX, clientY } = e;
@@ -144,10 +163,27 @@ class Game extends index_1.JY {
     }
     running() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('my running');
-            yield lib_1.default.waitMoment(4000);
-            this.setState(jy_1.STATE.gameOver);
+            this.frame++;
+            //先清空场景
+            this.stage.clear();
+            this.createSprite();
+            this.ballList.forEach(ball => {
+                ball.update();
+                ball.draw();
+            });
+            // console.log('my running')
+            // await lib.waitMoment(4000);
+            // this.setState(STATE.gameOver);
         });
+    }
+    //创建角色
+    createSprite() {
+        //100帧创建一个角色
+        if (this.frame % 100 == 0) {
+            let x = lib_1.default.random(0, stage.width - 30);
+            let ball = new Ball(this.stage, 'images/ball.png', 30, 60, x, this.stage.height);
+            this.ballList.push(ball);
+        }
     }
     gameOver() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -158,7 +194,13 @@ class Game extends index_1.JY {
         });
     }
 }
-new Game(stage, title, descript);
+let mygame = new Game(stage, title, descript);
+mygame.resources = [
+    'images/ball.png',
+    'images/btn-start.png',
+    'images/descript.jpg'
+];
+mygame.setup();
 
 
 /***/ }),
@@ -428,8 +470,9 @@ class JY {
         this.func = new Function;
         this.ispause = false; //是否处于暂停状态
         this.interval = 10;
+        this.resources = [];
         this.context = stage.context;
-        this.setup();
+        // this.setup();
     }
     setup() {
         this.stage.draw();
@@ -440,10 +483,14 @@ class JY {
     // 实现游戏帧循环
     loop() {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('loop');
             if (!this.ispause) {
                 yield this.func();
             }
-            this.aniId = window.requestAnimationFrame(this.loop.bind(this));
+            this.aniId = window.requestAnimationFrame(() => {
+                console.log('lloop.');
+                this.loop();
+            });
         });
     }
     //分数面板
@@ -496,12 +543,13 @@ class JY {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('loading....');
             yield this.showLoading();
+            console.log('loading end...');
             this.setState(STATE.title);
         });
     }
     showLoading() {
         lib_1.default.write(this.stage, '正在加载中');
-        return lib_1.default.waitMoment(3000);
+        return lib_1.default.loadImages(this.resources);
     }
     title() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -658,14 +706,43 @@ exports.default = {
     //导入图片
     draw(stage, img, dx, dy, dWidth, dHeight, sx, sy, sWidth, sHeight) {
         let context = stage.context;
-        let image = wx.createImage();
+        // let image = wx.createImage();
+        let image = this.caches[img];
         let args = Array.prototype.slice.call(arguments, 2);
         args.unshift(image);
-        console.log(args);
-        image.onload = () => {
-            context.drawImage.call(context, ...args);
-        };
-        image.src = img;
+        console.log('draw', img);
+        // image.onload = ()=>{
+        //     context.drawImage.call(context,...args);
+        // } 
+        // image.src = img;
+        context.drawImage.call(context, ...args);
+    },
+    //取区间数的随机值
+    random(min, max) {
+        return Math.floor(Math.random() * (max - min) + min);
+    },
+    caches: {},
+    loadImages(files) {
+        // let cache = {};
+        let arr = [];
+        return new Promise(resolve => {
+            for (let k in files) {
+                arr.push(new Promise(resolve => {
+                    let image = wx.createImage();
+                    image.onload = () => {
+                        this.caches[files[k]] = image;
+                        resolve();
+                    };
+                    image.src = files[k];
+                }));
+            }
+            return Promise.all(arr).catch(() => {
+                console.log('加载资源出错.');
+            }).then(() => {
+                console.log('加载资源完成.');
+                resolve();
+            });
+        });
     }
 };
 
@@ -731,7 +808,8 @@ var SHAPE;
  * 游戏基础的精灵类
  */
 class Sprite {
-    constructor(imgSrc = '', width = 0, height = 0, x = 0, y = 0) {
+    constructor(stage, imgSrc = '', width = 0, height = 0, x = 0, y = 0) {
+        this.stage = stage;
         this.imgSrc = imgSrc;
         this.type = SHAPE.rect;
         this.width = width;
@@ -743,10 +821,10 @@ class Sprite {
     /**
      * 将精灵图绘制在canvas上
      */
-    draw(stage) {
+    draw() {
         if (!this.visible)
             return;
-        lib_1.default.draw(stage, this.imgSrc, this.x, this.y, this.width, this.height);
+        lib_1.default.draw(this.stage, this.imgSrc, this.x, this.y, this.width, this.height);
     }
     /**
      * 简单的碰撞检测定义：
@@ -784,11 +862,12 @@ exports.default = Sprite;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 class Stage {
-    constructor(context, width, height, style) {
-        this.context = context;
+    constructor(canvas, width, height, style) {
+        this.canvas = canvas;
         this.width = width;
         this.height = height;
         this.style = style;
+        this.context = canvas.getContext('2d');
     }
     draw(style) {
         this.context.fillStyle = this.style;
