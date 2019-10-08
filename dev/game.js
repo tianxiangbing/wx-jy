@@ -106,31 +106,27 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = __webpack_require__(/*! ../src/index */ "./src/index.ts");
-const lib_1 = __webpack_require__(/*! ../src/lib */ "./src/lib.ts");
-const jy_1 = __webpack_require__(/*! ../src/jy */ "./src/jy.ts");
 const canvas = wx.createCanvas();
 const [height, width] = [canvas.height, canvas.width];
-// console.log(canvas.height,canvas.width)
-// const context = canvas.getContext('2d');
 //创建舞台
 let stage = new index_1.Stage(canvas, width, height, '#FFFFFF');
 let title = new index_1.Title('打气球', stage);
 title.create = (resolve) => {
-    lib_1.default.write(stage, '一起来打气球');
+    index_1.lib.write(stage, '一起来打气球');
     resolve();
 };
 let descript = new index_1.Descript(stage);
 descript.create = (resolve) => __awaiter(void 0, void 0, void 0, function* () {
-    lib_1.default.draw(stage, 'images/descript.jpg', 0, 0, stage.width, stage.height);
+    index_1.lib.draw(stage, 'images/descript.jpg', 0, 0, stage.width, stage.height);
     // await lib.waitMoment(3000);
     //添加开始按钮的Sprite
     let btn = new index_1.Sprite(stage, 'images/btn-start.png', 100, 40, (width - 100) / 2, height - 40 - 40);
     btn.draw();
     wx.onTouchStart((e) => {
-        if (btn.touchHits(e)) {
+        btn.touchHits(e, () => {
             wx.offTouchStart();
             resolve();
-        }
+        });
     });
 });
 //气球类
@@ -142,7 +138,7 @@ class Ball extends index_1.Sprite {
     //更新位置
     update() {
         this.y -= this.speed;
-        if (this.y < 0) {
+        if (this.y + this.height < 0) {
             this.visible = false;
         }
     }
@@ -154,12 +150,20 @@ class Game extends index_1.JY {
         this.ballList = []; //所有球的集合
     }
     newGame() {
+        this.stage.style = "green";
+        this.setState(index_1.STATE.running);
+        //事件绑定
         wx.onTouchStart(e => {
             let { clientX, clientY } = e;
             console.log(clientX, clientY);
+            this.ballList.forEach((ball, index) => {
+                //触碰回收球并播放声音
+                ball.touchHits(e, () => {
+                    this.ballList.splice(index, 1);
+                    index_1.lib.play('audio/boom.mp3');
+                });
+            });
         });
-        this.stage.style = "green";
-        this.setState(jy_1.STATE.running);
     }
     running() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -167,30 +171,34 @@ class Game extends index_1.JY {
             //先清空场景
             this.stage.clear();
             this.createSprite();
-            this.ballList.forEach(ball => {
+            this.ballList.forEach((ball, index) => {
                 ball.update();
                 ball.draw();
+                //回收球
+                if (!ball.visible) {
+                    this.ballList.splice(index, 1);
+                }
             });
-            // console.log('my running')
-            // await lib.waitMoment(4000);
-            // this.setState(STATE.gameOver);
         });
     }
     //创建角色
     createSprite() {
         //100帧创建一个角色
         if (this.frame % 100 == 0) {
-            let x = lib_1.default.random(0, stage.width - 30);
-            let ball = new Ball(this.stage, 'images/ball.png', 30, 60, x, this.stage.height);
+            let x = index_1.lib.random(0, stage.width - 30);
+            let w = 40;
+            let h = 340 / 120 * w;
+            let ball = new Ball(this.stage, 'images/ball.png', w, h, x, this.stage.height);
+            // ball.touchHits(this.touch)
             this.ballList.push(ball);
         }
     }
     gameOver() {
         return __awaiter(this, void 0, void 0, function* () {
             stage.clear();
-            lib_1.default.write(stage, '游戏结束！');
-            yield lib_1.default.waitMoment(3000);
-            this.setState(jy_1.STATE.descript);
+            index_1.lib.write(stage, '游戏结束！');
+            yield index_1.lib.waitMoment(3000);
+            this.setState(index_1.STATE.descript);
         });
     }
 }
@@ -198,7 +206,8 @@ let mygame = new Game(stage, title, descript);
 mygame.resources = [
     'images/ball.png',
     'images/btn-start.png',
-    'images/descript.jpg'
+    'images/descript.jpg',
+    'audio/boom.mp3'
 ];
 mygame.setup();
 
@@ -401,20 +410,21 @@ exports.default = GameOver;
 Object.defineProperty(exports, "__esModule", { value: true });
 const jy_1 = __webpack_require__(/*! ./jy */ "./src/jy.ts");
 exports.JY = jy_1.default;
+exports.STATE = jy_1.STATE;
 const control_1 = __webpack_require__(/*! ./control */ "./src/control.ts");
 exports.Control = control_1.default;
 const descript_1 = __webpack_require__(/*! ./descript */ "./src/descript.ts");
 exports.Descript = descript_1.default;
 const gameOver_1 = __webpack_require__(/*! ./gameOver */ "./src/gameOver.ts");
 exports.GameOver = gameOver_1.default;
-const score_1 = __webpack_require__(/*! ./score */ "./src/score.ts");
-exports.Score = score_1.default;
 const sprite_1 = __webpack_require__(/*! ./sprite */ "./src/sprite.ts");
 exports.Sprite = sprite_1.default;
 const stage_1 = __webpack_require__(/*! ./stage */ "./src/stage.ts");
 exports.Stage = stage_1.default;
 const title_1 = __webpack_require__(/*! ./title */ "./src/title.ts");
 exports.Title = title_1.default;
+const lib_1 = __webpack_require__(/*! ../src/lib */ "./src/lib.ts");
+exports.lib = lib_1.default;
 
 
 /***/ }),
@@ -445,10 +455,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /// <reference path="gameOver.ts" />
 /// <reference path="stage.ts" />
 /// <reference path="control.ts" />
-/// <reference path="score.ts" />
 */
 const sprite_1 = __webpack_require__(/*! ./sprite */ "./src/sprite.ts");
-const score_1 = __webpack_require__(/*! ./score */ "./src/score.ts");
 const lib_1 = __webpack_require__(/*! ./lib */ "./src/lib.ts");
 //游戏主框架
 var STATE;
@@ -483,19 +491,11 @@ class JY {
     // 实现游戏帧循环
     loop() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('loop');
             if (!this.ispause) {
                 yield this.func();
             }
-            this.aniId = window.requestAnimationFrame(() => {
-                console.log('lloop.');
-                this.loop();
-            });
+            this.aniId = requestAnimationFrame(this.loop.bind(this));
         });
-    }
-    //分数面板
-    scoreInit() {
-        this.scoreScreen = new score_1.default('--');
     }
     createControl() {
     }
@@ -524,7 +524,6 @@ class JY {
         //游戏结束
         //清空场景，显示结果
         console.log('gameOver');
-        // this.scoreScreen.remove();
         this.stage.clear();
         this.showGameOver();
     }
@@ -549,7 +548,7 @@ class JY {
     }
     showLoading() {
         lib_1.default.write(this.stage, '正在加载中');
-        return lib_1.default.loadImages(this.resources);
+        return lib_1.default.loadResources(this.resources);
     }
     title() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -609,16 +608,16 @@ class JY {
     setState(state) {
         this.currentState = state;
         this.checkState();
-        this.func();
+        // this.func();
     }
     //碰撞检测
     hits(oA, oB) {
         var bx = false, by = false;
-        if (oA.shape == sprite_1.SHAPE.rect) {
-            var bw = oB.w;
-            var aw = oA.w;
-            var bh = oB.h;
-            var ah = oA.h;
+        if (oA.type == sprite_1.SHAPE.rect) {
+            var bw = oB.width;
+            var aw = oA.width;
+            var bh = oB.height;
+            var ah = oA.height;
             if (oA.x > oB.x) {
                 bx = oA.x - oB.x < bw;
             }
@@ -641,7 +640,7 @@ class JY {
             ;
             return (bx && by);
         }
-        else if (oA.shape == sprite_1.SHAPE.circle) {
+        else if (oA.type == sprite_1.SHAPE.circle) {
             var r2 = oA.r + oB.r;
             let oAc = oA.getCenter();
             let oBc = oB.getCenter();
@@ -722,19 +721,34 @@ exports.default = {
         return Math.floor(Math.random() * (max - min) + min);
     },
     caches: {},
-    loadImages(files) {
+    loadResources(files) {
         // let cache = {};
         let arr = [];
         return new Promise(resolve => {
             for (let k in files) {
-                arr.push(new Promise(resolve => {
-                    let image = wx.createImage();
-                    image.onload = () => {
-                        this.caches[files[k]] = image;
-                        resolve();
-                    };
-                    image.src = files[k];
-                }));
+                if (/\.(jpg|gif|png|bmg|jpeg)/.test(files[k])) {
+                    //图片的预加载
+                    arr.push(new Promise(resolve => {
+                        let image = wx.createImage();
+                        image.onload = () => {
+                            this.caches[files[k]] = image;
+                            resolve();
+                        };
+                        image.src = files[k];
+                    }));
+                }
+                else if (/\.(mp3|wav|avi|m4a|aac)/.test(files[k])) {
+                    //音频
+                    arr.push(new Promise(resolve => {
+                        let audio = wx.createInnerAudioContext();
+                        audio.src = files[k];
+                        audio.onCanplay(() => {
+                            console.log(2222);
+                            this.caches[files[k]] = audio;
+                            resolve();
+                        });
+                    }));
+                }
             }
             return Promise.all(arr).catch(() => {
                 console.log('加载资源出错.');
@@ -743,45 +757,12 @@ exports.default = {
                 resolve();
             });
         });
+    },
+    play(url) {
+        //播放声音
+        this.caches[url].play();
     }
 };
-
-
-/***/ }),
-
-/***/ "./src/score.ts":
-/*!**********************!*\
-  !*** ./src/score.ts ***!
-  \**********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-class Score {
-    constructor(text) {
-        this.text = text;
-        console.log(arguments);
-    }
-    create(callback) {
-        this.elem = document.createElement('div');
-        this.elem.className = "score";
-        this.elem.innerHTML = this.text || '';
-        this.elem.style.position = 'absolute';
-        this.elem.style.right = this.right || '10px';
-        this.elem.style.top = this.top || '10px';
-        return this.elem;
-    }
-    change(text) {
-        this.text = text;
-        this.elem.innerHTML = this.text;
-    }
-    remove() {
-        this.elem.parentNode.removeChild(this.elem);
-    }
-}
-exports.default = Score;
 
 
 /***/ }),
@@ -812,6 +793,7 @@ class Sprite {
         this.stage = stage;
         this.imgSrc = imgSrc;
         this.type = SHAPE.rect;
+        this.r = 0; //半径
         this.width = width;
         this.height = height;
         this.x = x;
@@ -841,9 +823,15 @@ class Sprite {
             && spY >= this.y
             && spY <= this.y + this.height);
     }
-    touchHits(e) {
+    touchHits(e, callback) {
         let touch = e.touches[0];
-        return this.hits({ x: touch.clientX, y: touch.clientY, width: 0, height: 0, visible: true });
+        if (this.hits({ x: touch.clientX, y: touch.clientY, width: 0, height: 0, visible: true })) {
+            callback && callback.call(this);
+        }
+    }
+    getCenter() {
+        //圆心位置
+        return [this.x + this.r, this.y + this.r];
     }
 }
 exports.default = Sprite;
@@ -899,7 +887,7 @@ class Title {
     constructor(title, stage) {
         this.title = title;
         this.stage = stage;
-        console.log(arguments);
+        // console.log(arguments)
     }
     create(resolve) {
         lib_1.default.write(this.stage, this.title);

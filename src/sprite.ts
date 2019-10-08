@@ -24,8 +24,9 @@ export default class Sprite implements SP {
     x: number;
     y: number;
     visible: boolean;
-    type:SHAPE = SHAPE.rect;
-    constructor(public stage:Stage,public imgSrc = '', width = 0, height = 0, x = 0, y = 0) {
+    type: SHAPE = SHAPE.rect;
+    r:number = 0 ;//半径
+    constructor(public stage: Stage, public imgSrc = '', width = 0, height = 0, x = 0, y = 0) {
 
         this.width = width
         this.height = height
@@ -69,8 +70,14 @@ export default class Sprite implements SP {
             && spY >= this.y
             && spY <= this.y + this.height)
     }
-    touchHits(e){
+    touchHits(e, callback?: Function) {
         let touch = e.touches[0];
-        return this.hits({x:touch.clientX,y:touch.clientY,width:0,height:0,visible:true});
+        if (this.hits({ x: touch.clientX, y: touch.clientY, width: 0, height: 0, visible: true })) {
+            callback && callback.call(this)
+        }
+    }
+    getCenter(){
+        //圆心位置
+        return [this.x +this.r,this.y +this.r];
     }
 }

@@ -97,14 +97,14 @@
 
 Object.defineProperty(exports, "__esModule", { value: true });
 //操作界面
-var Control = /** @class */ (function () {
-    function Control() {
+class Control {
+    constructor() {
         this.rect = [160, 160];
         this.moveRect = [50, 50];
         this.elemPosition = [10, 10];
         this.angle = 0; //角度
     }
-    Control.prototype.create = function () {
+    create() {
         this.elem = document.createElement('div');
         this.elem.className = "control";
         this.elem.style.position = 'absolute';
@@ -123,52 +123,52 @@ var Control = /** @class */ (function () {
         this.resetPos();
         this.bindEvent();
         return this.elem;
-    };
-    Control.prototype.resetPos = function () {
+    }
+    resetPos() {
         //重置位置
         // console.log(this.moveCenter)
         this.toPosition = [0, 0];
         this.transPosition();
-    };
+    }
     //传入圆心转换成坐标,
-    Control.prototype.transPosition = function () {
-        var x = (this.elemCenter[0] - this.moveCenter[0]) + this.toPosition[0];
-        var y = (this.elemCenter[1] - this.moveCenter[1]) - this.toPosition[1];
+    transPosition() {
+        let x = (this.elemCenter[0] - this.moveCenter[0]) + this.toPosition[0];
+        let y = (this.elemCenter[1] - this.moveCenter[1]) - this.toPosition[1];
         this.moveElem.style.left = x + 'px';
         this.moveElem.style.top = y + 'px';
-    };
-    Control.prototype.bindEvent = function () {
+    }
+    bindEvent() {
         this.elem.addEventListener('touchstart', function (event) {
-            var epos = event.touches[0] || event;
+            let epos = event.touches[0] || event;
             this.setPosition(epos);
         }.bind(this), false);
         this.elem.addEventListener('touchmove', function (event) {
-            var epos = event.touches[0] || event;
+            let epos = event.touches[0] || event;
             this.setPosition(epos);
         }.bind(this), false);
         this.elem.addEventListener('touchend', function (event) {
             this.resetPos();
         }.bind(this), false);
-    };
+    }
     // 计算边界值,设置位置
-    Control.prototype.setPosition = function (epos) {
+    setPosition(epos) {
         this.position = [this.elem.offsetLeft, this.elem.offsetTop];
-        var x = epos.pageX - this.position[0];
-        var y = epos.pageY - this.position[1];
+        let x = epos.pageX - this.position[0];
+        let y = epos.pageY - this.position[1];
         // x= Math.min (x,this.rect[0]-this.moveCenter[0]);
         // x = Math.max(x,this.moveCenter[0])
-        var x1 = (x - this.elemCenter[0]); //相对于圆点的位置
-        var y1 = -(y - this.elemCenter[1]);
+        let x1 = (x - this.elemCenter[0]); //相对于圆点的位置
+        let y1 = -(y - this.elemCenter[1]);
         console.log(x1, y1);
-        var ang = Math.atan2(y1, x1);
+        let ang = Math.atan2(y1, x1);
         // this.angle = ang;
         // console.log('角度：'+ang)
-        var c = Math.sqrt(x1 * x1 + y1 * y1);
-        var r = this.elemCenter[0] - this.moveCenter[0]; //最长半径
+        let c = Math.sqrt(x1 * x1 + y1 * y1);
+        let r = this.elemCenter[0] - this.moveCenter[0]; //最长半径
         if (c > r) {
             // console.log('out', c)
-            var x2 = Math.cos(ang) * r;
-            var y2 = Math.sin(ang) * r;
+            let x2 = Math.cos(ang) * r;
+            let y2 = Math.sin(ang) * r;
             //下面是另一种算法
             // y2=y1*r/c;
             // x2= x1*r/c;
@@ -179,18 +179,17 @@ var Control = /** @class */ (function () {
         }
         this.toPosition = [x1, y1];
         this.transPosition();
-    };
-    Control.prototype.getAngle = function () {
+    }
+    getAngle() {
         // console.log(this.toPosition)
         this.angle = Math.atan2(this.toPosition[1], this.toPosition[0]);
         return this.angle;
-    };
+    }
     //获取到角度
-    Control.prototype.remove = function () {
+    remove() {
         this.elem.parentNode.removeChild(this.elem);
-    };
-    return Control;
-}());
+    }
+}
 exports.default = Control;
 
 
@@ -207,35 +206,22 @@ exports.default = Control;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 //描述设计
-var Descript = /** @class */ (function () {
-    function Descript(btntitle, text) {
-        this.btntitle = btntitle;
-        this.text = text;
+class Descript {
+    constructor(stage) {
+        this.stage = stage;
         console.log(arguments);
     }
-    Descript.prototype.create = function (callback) {
-        this.elem = document.createElement('div');
-        this.elem.className = "discript";
-        this.elem.innerHTML = this.text || '';
-        this.elem.style.position = 'absolute';
-        var btn = document.createElement('button');
-        btn.className = 'button start';
-        btn.innerText = this.btntitle;
-        // btn.onclick = callback.bind(this);
-        btn.addEventListener('touchstart', function (event) {
-            callback.call(this);
-        }.bind(this), false);
-        btn.addEventListener('click', function (event) {
-            callback.call(this);
-        }.bind(this), false);
-        this.elem.appendChild(btn);
-        return this.elem;
-    };
-    Descript.prototype.remove = function () {
-        this.elem.parentNode.removeChild(this.elem);
-    };
-    return Descript;
-}());
+    create(resolve) {
+        wx.onTouchStart(() => {
+            console.log('touch...');
+            wx.offTouchStart();
+            resolve();
+        });
+    }
+    remove() {
+        this.stage.clear();
+    }
+}
 exports.default = Descript;
 
 
@@ -251,19 +237,18 @@ exports.default = Descript;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var GameOver = /** @class */ (function () {
-    function GameOver(btntitle) {
+class GameOver {
+    constructor(btntitle) {
         this.btntitle = btntitle;
     }
-    GameOver.prototype.create = function (callback, text) {
-        if (text === void 0) { text = ''; }
+    create(callback, text = '') {
         this.elem = document.createElement('div');
         this.elem.className = 'gameOver';
         this.textElem = document.createElement('div');
         this.textElem.className = 'text';
         this.textElem.innerHTML = text;
         this.elem.appendChild(this.textElem);
-        var btn = document.createElement('button');
+        let btn = document.createElement('button');
         btn.className = "button";
         btn.innerText = this.btntitle;
         btn.addEventListener('touchstart', function (event) {
@@ -272,16 +257,14 @@ var GameOver = /** @class */ (function () {
         // btn.onclick = callback.bind(this);
         this.elem.appendChild(btn);
         return this.elem;
-    };
-    GameOver.prototype.setText = function (text) {
-        if (text === void 0) { text = ''; }
+    }
+    setText(text = '') {
         this.textElem.innerHTML = text;
-    };
-    GameOver.prototype.remove = function () {
+    }
+    remove() {
         this.elem.parentNode.removeChild(this.elem);
-    };
-    return GameOver;
-}());
+    }
+}
 exports.default = GameOver;
 
 
@@ -297,24 +280,23 @@ exports.default = GameOver;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var jy_1 = __webpack_require__(/*! ./jy */ "./src/jy.ts");
+const jy_1 = __webpack_require__(/*! ./jy */ "./src/jy.ts");
 exports.JY = jy_1.default;
-var control_1 = __webpack_require__(/*! ./control */ "./src/control.ts");
+exports.STATE = jy_1.STATE;
+const control_1 = __webpack_require__(/*! ./control */ "./src/control.ts");
 exports.Control = control_1.default;
-var descript_1 = __webpack_require__(/*! ./descript */ "./src/descript.ts");
+const descript_1 = __webpack_require__(/*! ./descript */ "./src/descript.ts");
 exports.Descript = descript_1.default;
-var gameOver_1 = __webpack_require__(/*! ./gameOver */ "./src/gameOver.ts");
+const gameOver_1 = __webpack_require__(/*! ./gameOver */ "./src/gameOver.ts");
 exports.GameOver = gameOver_1.default;
-var score_1 = __webpack_require__(/*! ./score */ "./src/score.ts");
-exports.Score = score_1.default;
-var sprite_1 = __webpack_require__(/*! ./sprite */ "./src/sprite.ts");
+const sprite_1 = __webpack_require__(/*! ./sprite */ "./src/sprite.ts");
 exports.Sprite = sprite_1.default;
-var stage_1 = __webpack_require__(/*! ./stage */ "./src/stage.ts");
+const stage_1 = __webpack_require__(/*! ./stage */ "./src/stage.ts");
 exports.Stage = stage_1.default;
-var title_1 = __webpack_require__(/*! ./title */ "./src/title.ts");
+const title_1 = __webpack_require__(/*! ./title */ "./src/title.ts");
 exports.Title = title_1.default;
-var writeText_1 = __webpack_require__(/*! ./writeText */ "./src/writeText.ts");
-exports.WriteText = writeText_1.default;
+const lib_1 = __webpack_require__(/*! ../src/lib */ "./src/lib.ts");
+exports.lib = lib_1.default;
 
 
 /***/ }),
@@ -328,6 +310,15 @@ exports.WriteText = writeText_1.default;
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 /*
 /// <reference path="sprite.ts" />
@@ -336,11 +327,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /// <reference path="gameOver.ts" />
 /// <reference path="stage.ts" />
 /// <reference path="control.ts" />
-/// <reference path="score.ts" />
-/// <reference path="writeText.ts" />
 */
-var sprite_1 = __webpack_require__(/*! ./sprite */ "./src/sprite.ts");
-var score_1 = __webpack_require__(/*! ./score */ "./src/score.ts");
+const sprite_1 = __webpack_require__(/*! ./sprite */ "./src/sprite.ts");
+const lib_1 = __webpack_require__(/*! ./lib */ "./src/lib.ts");
 //游戏主框架
 var STATE;
 (function (STATE) {
@@ -349,214 +338,158 @@ var STATE;
     STATE[STATE["descript"] = 2] = "descript";
     STATE[STATE["newGame"] = 3] = "newGame";
     STATE[STATE["running"] = 4] = "running";
-    STATE[STATE["pause"] = 5] = "pause";
-    STATE[STATE["levelUp"] = 6] = "levelUp";
-    STATE[STATE["die"] = 7] = "die";
-    STATE[STATE["gameOver"] = 8] = "gameOver";
+    STATE[STATE["gameOver"] = 5] = "gameOver";
 })(STATE = exports.STATE || (exports.STATE = {}));
-var JY = /** @class */ (function () {
-    function JY(view, stage, titleStage, descriptStage, gameOverStage, controlStage) {
-        this.view = view;
+class JY {
+    constructor(stage, titleStage, descriptStage, gameOverStage, controlStage) {
         this.stage = stage;
         this.titleStage = titleStage;
         this.descriptStage = descriptStage;
         this.gameOverStage = gameOverStage;
         this.controlStage = controlStage;
         this.func = new Function;
+        this.ispause = false; //是否处于暂停状态
         this.interval = 10;
-        console.log(this.view);
+        this.resources = [];
+        this.context = stage.context;
+        // this.setup();
     }
-    JY.prototype.setup = function () {
+    setup() {
+        this.stage.draw();
         this.currentState = STATE.loading;
         this.setState(STATE.loading);
-        document.addEventListener('touchmove', function (event) {
-            if (event.preventDefault) {
-                event.preventDefault();
+        this.loop();
+    }
+    // 实现游戏帧循环
+    loop() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.ispause) {
+                yield this.func();
             }
-            else {
-                window.event.returnValue == false;
-            }
+            this.aniId = requestAnimationFrame(this.loop.bind(this));
         });
-    };
-    JY.prototype.createStage = function () {
-        console.log(this.stage);
-        var canvas = this.stage.create();
-        this.context = canvas.getContext('2d');
-        this.view.appendChild(canvas);
-    };
-    JY.prototype.run = function () {
-        console.log('run');
-        //this.func();
-        this.descriptStage.remove();
-        this.createStage(); //创建舞台
-        this.controlStage && this.createControl();
-        this.setState(STATE.newGame);
-    };
-    //分数面板
-    JY.prototype.scoreInit = function () {
-        this.scoreScreen = new score_1.default('--');
-        this.view.appendChild(this.scoreScreen.create());
-    };
-    JY.prototype.createControl = function () {
-        this.view.appendChild(this.controlStage.create());
-    };
-    //加载
-    JY.prototype.loading = function () {
-        this.loadFile(function () {
-            this.setState(STATE.title);
-        }.bind(this));
-    };
-    JY.prototype.loadFile = function (callback) {
-        var _this = this;
-        var obj = {};
-        if (_this.files.length > 0) {
-            var _loop_1 = function (v) {
-                obj[v] = {};
-                obj[v].count = 0;
-                var type = v;
-                console.log(_this.files[v]);
-                var _loop_2 = function (i, l) {
-                    var item = _this.files[v][i];
-                    if (type == 'image') {
-                        var img = new Image();
-                        img.onload = function () {
-                            obj[v].count++;
-                            console.log(item + ' loaded');
-                            if (_this.checkLoaded(obj)) {
-                                callback.call(_this);
-                            }
-                        };
-                        img.src = item;
-                    }
-                };
-                for (var i = 0, l = _this.files[v].length; i < l; i++) {
-                    _loop_2(i, l);
-                }
-            };
-            for (var v in _this.files) {
-                _loop_1(v);
-            }
-        }
-        else {
-            callback.call(_this);
-        }
-    };
-    JY.prototype.checkLoaded = function (obj) {
-        for (var v in obj) {
-            if (obj[v].count != this.files[v].length) {
-                return false;
-            }
-        }
-        return true;
-    };
-    //标题
-    JY.prototype.title = function () {
-        console.log('title');
-        var titleStage = this.titleStage.create(function () {
-            this.run();
-        }.bind(this));
-        this.view.appendChild(titleStage);
-        setTimeout(function () {
-            this.titleStage.remove();
-            this.setState(STATE.descript);
-        }.bind(this), 1000);
-    };
-    //说明
-    JY.prototype.descript = function () {
-        console.log('descript');
-        var desc = this.descriptStage.create(function () {
-            this.run();
-        }.bind(this));
-        this.view.appendChild(desc);
-    };
+    }
+    createControl() {
+    }
     //新的开始
-    JY.prototype.newGame = function () {
+    newGame() {
         //游戏开始，清空场景
         //打开计时器
-        this.scoreInit();
         this.setState(STATE.running);
-        this.startTimer();
-    };
+    }
     //结束 
-    JY.prototype.over = function () {
+    over() {
         this.setState(STATE.gameOver);
-    };
+    }
     //暂停
-    JY.prototype.pause = function () {
-        this.stopTimer();
-    };
+    pause() {
+        this.ispause = true;
+        window.cancelAnimationFrame(this.aniId);
+    }
     //暂停后的继续
-    JY.prototype.play = function () {
-        this.startTimer();
-    };
+    play() {
+        this.ispause = false;
+        this.loop();
+    }
     //游戏结束
-    JY.prototype.gameOver = function () {
+    gameOver() {
         //游戏结束
         //清空场景，显示结果
         console.log('gameOver');
-        this.scoreScreen.remove();
-        this.stage.remove();
-        this.controlStage && this.controlStage.remove();
-        this.stopTimer();
-        var gameOver = this.gameOverStage.create(function () {
-            this.gameOverStage.remove();
-            this.setState(STATE.descript);
-        }.bind(this));
-        this.view.appendChild(gameOver);
-    };
-    //停止刷新
-    JY.prototype.stopTimer = function () {
-        clearInterval(this.timer);
-    };
-    //刷新帧
-    JY.prototype.startTimer = function () {
-        var _this = this;
-        this.timer = setInterval(function () {
-            _this.func.bind(_this)();
-        }, this.interval);
-    };
+        this.stage.clear();
+        this.showGameOver();
+    }
+    //结束画面
+    showGameOver() {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('game  over...');
+            yield lib_1.default.waitMoment(3000);
+        });
+    }
     //游戏中的
-    JY.prototype.running = function () {
-        // console.log('running...')
-        this.context.clearRect(0, 0, this.stage.width, this.stage.height);
-    };
+    running() {
+        console.log('running...');
+    }
+    loading() {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('loading....');
+            yield this.showLoading();
+            console.log('loading end...');
+            this.setState(STATE.title);
+        });
+    }
+    showLoading() {
+        lib_1.default.write(this.stage, '正在加载中');
+        return lib_1.default.loadResources(this.resources);
+    }
+    title() {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('title....');
+            yield this.showTitle();
+            this.setState(STATE.descript);
+        });
+    }
+    showTitle() {
+        // this.titleStage.create()
+        // return lib.waitMoment(3000);
+        return new Promise(resolve => {
+            this.titleStage.create(resolve);
+        });
+    }
+    descript() {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('descript...');
+            yield this.showDescript();
+            this.setState(STATE.newGame);
+        });
+    }
+    showDescript() {
+        return new Promise(resolve => {
+            this.descriptStage.create(resolve);
+        });
+        // return lib.waitMoment(3000);
+    }
+    proxy(stageFunc) {
+        this.stage.clear();
+        return stageFunc.bind(this);
+    }
     //检查状态
-    JY.prototype.checkState = function () {
+    checkState() {
         switch (this.currentState) {
             case STATE.loading:
-                this.func = this.loading;
+                this.func = this.proxy(this.loading);
                 break;
             case STATE.title:
-                this.func = this.title;
+                this.func = this.proxy(this.title);
                 break;
             case STATE.descript:
-                this.func = this.descript;
+                this.func = this.proxy(this.descript);
                 break;
             case STATE.newGame:
-                this.func = this.newGame;
+                this.func = this.proxy(this.newGame);
                 break;
             case STATE.running:
-                this.func = this.running;
+                this.func = this.proxy(this.running);
                 break;
             case STATE.gameOver:
-                this.func = this.gameOver;
+                this.func = this.proxy(this.gameOver);
             default:
                 break;
         }
-    };
-    JY.prototype.setState = function (state) {
+    }
+    setState(state) {
         this.currentState = state;
         this.checkState();
-        this.func();
-    };
+        // this.func();
+    }
     //碰撞检测
-    JY.prototype.hits = function (oA, oB) {
+    hits(oA, oB) {
         var bx = false, by = false;
-        if (oA.shape == sprite_1.SHAPE.rect) {
-            var bw = oB.w;
-            var aw = oA.w;
-            var bh = oB.h;
-            var ah = oA.h;
+        if (oA.type == sprite_1.SHAPE.rect) {
+            var bw = oB.width;
+            var aw = oA.width;
+            var bh = oB.height;
+            var ah = oA.height;
             if (oA.x > oB.x) {
                 bx = oA.x - oB.x < bw;
             }
@@ -579,56 +512,129 @@ var JY = /** @class */ (function () {
             ;
             return (bx && by);
         }
-        else if (oA.shape == sprite_1.SHAPE.circle) {
+        else if (oA.type == sprite_1.SHAPE.circle) {
             var r2 = oA.r + oB.r;
-            var oAc = oA.getCenter();
-            var oBc = oB.getCenter();
+            let oAc = oA.getCenter();
+            let oBc = oB.getCenter();
             bx = Math.abs(oAc[0] - oBc[0]) < r2;
             by = Math.abs(oAc[1] - oBc[1]) < r2;
             return (bx && by);
         }
-    };
-    return JY;
-}());
+    }
+}
 exports.default = JY;
 
 
 /***/ }),
 
-/***/ "./src/score.ts":
-/*!**********************!*\
-  !*** ./src/score.ts ***!
-  \**********************/
+/***/ "./src/lib.ts":
+/*!********************!*\
+  !*** ./src/lib.ts ***!
+  \********************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var Score = /** @class */ (function () {
-    function Score(text) {
-        this.text = text;
-        console.log(arguments);
+exports.default = {
+    /*
+    * 暂停一段时间
+    */
+    //暂停一段时间
+    waitMoment(second) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise(resolve => {
+                let t = setTimeout(() => {
+                    clearTimeout(t);
+                    resolve();
+                }, second);
+            });
+        });
+    },
+    //显示文字
+    write(stage, text, x, y, font = "14px Arial", fillStyle = '#000000') {
+        let context = stage.context;
+        context.font = font;
+        context.fillStyle = fillStyle;
+        if (x == undefined) {
+            x = (stage.width - text.length * 14) / 2;
+        }
+        if (y == undefined) {
+            y = stage.height / 2 - 15;
+        }
+        context.fillText(text, x, y);
+    },
+    //导入图片
+    draw(stage, img, dx, dy, dWidth, dHeight, sx, sy, sWidth, sHeight) {
+        let context = stage.context;
+        // let image = wx.createImage();
+        let image = this.caches[img];
+        let args = Array.prototype.slice.call(arguments, 2);
+        args.unshift(image);
+        console.log('draw', img);
+        // image.onload = ()=>{
+        //     context.drawImage.call(context,...args);
+        // } 
+        // image.src = img;
+        context.drawImage.call(context, ...args);
+    },
+    //取区间数的随机值
+    random(min, max) {
+        return Math.floor(Math.random() * (max - min) + min);
+    },
+    caches: {},
+    loadResources(files) {
+        // let cache = {};
+        let arr = [];
+        return new Promise(resolve => {
+            for (let k in files) {
+                if (/\.(jpg|gif|png|bmg|jpeg)/.test(files[k])) {
+                    //图片的预加载
+                    arr.push(new Promise(resolve => {
+                        let image = wx.createImage();
+                        image.onload = () => {
+                            this.caches[files[k]] = image;
+                            resolve();
+                        };
+                        image.src = files[k];
+                    }));
+                }
+                else if (/\.(mp3|wav|avi|m4a|aac)/.test(files[k])) {
+                    //音频
+                    arr.push(new Promise(resolve => {
+                        let audio = wx.createInnerAudioContext();
+                        audio.src = files[k];
+                        audio.onCanplay(() => {
+                            console.log(2222);
+                            this.caches[files[k]] = audio;
+                            resolve();
+                        });
+                    }));
+                }
+            }
+            return Promise.all(arr).catch(() => {
+                console.log('加载资源出错.');
+            }).then(() => {
+                console.log('加载资源完成.');
+                resolve();
+            });
+        });
+    },
+    play(url) {
+        //播放声音
+        this.caches[url].play();
     }
-    Score.prototype.create = function (callback) {
-        this.elem = document.createElement('div');
-        this.elem.className = "score";
-        this.elem.innerHTML = this.text || '';
-        this.elem.style.position = 'absolute';
-        this.elem.style.right = this.right || '10px';
-        this.elem.style.top = this.top || '10px';
-        return this.elem;
-    };
-    Score.prototype.change = function (text) {
-        this.text = text;
-        this.elem.innerHTML = this.text;
-    };
-    Score.prototype.remove = function () {
-        this.elem.parentNode.removeChild(this.elem);
-    };
-    return Score;
-}());
-exports.default = Score;
+};
 
 
 /***/ }),
@@ -643,6 +649,7 @@ exports.default = Score;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+const lib_1 = __webpack_require__(/*! ./lib */ "./src/lib.ts");
 //sprite
 //形状
 var SHAPE;
@@ -650,76 +657,55 @@ var SHAPE;
     SHAPE[SHAPE["rect"] = 0] = "rect";
     SHAPE[SHAPE["circle"] = 1] = "circle";
 })(SHAPE = exports.SHAPE || (exports.SHAPE = {}));
-var Sprite = /** @class */ (function () {
-    function Sprite(context, url) {
-        this.x = 0; //x坐标
-        this.y = 0; //y坐标
-        this.w = 0; //宽度 
-        this.h = 0; //高度
-        this.sw = 0; //剪裁的宽
-        this.sh = 0; //前裁的高
-        this.sx = 0; //剪裁的x
-        this.sy = 0; //前裁的y
+/**
+ * 游戏基础的精灵类
+ */
+class Sprite {
+    constructor(stage, imgSrc = '', width = 0, height = 0, x = 0, y = 0) {
+        this.stage = stage;
+        this.imgSrc = imgSrc;
+        this.type = SHAPE.rect;
         this.r = 0; //半径
-        this.shape = SHAPE.rect; //默认方形
-        this.getImg(url);
-        this.context = context;
-    }
-    Sprite.prototype.setImg = function (url) {
-        this.getImg(url);
-    };
-    Sprite.prototype.getImg = function (url) {
-        //地址转换成img对象 
-        this.img = new Image();
-        this.img.src = url;
-        // this.img = document.createElement('img');
-        // this.img.src = url;
-        // console.log(this.img.readyState)
-        // this.img.onreadystatechange=function(){
-        //     console.log(222,this.img.readyState)
-        // }
-        this.img.onload = function () {
-            console.log('loaded');
-        };
-        // this.img = document.createElement('img');
-        // this.img.src = url;
-    };
-    Sprite.prototype.setSize = function (w, h) {
-        this.w = w || this.w;
-        this.h = h || this.h;
-        this.r = this.h / 2;
-    };
-    Sprite.prototype.getCenter = function () {
-        //圆心位置
-        return [this.x + this.r, this.y + this.r];
-    };
-    Sprite.prototype.setCutSize = function (sw, sh) {
-        this.sw = sw;
-        this.sh = sh;
-    };
-    Sprite.prototype.setPosition = function (x, y) {
+        this.width = width;
+        this.height = height;
         this.x = x;
         this.y = y;
-    };
-    Sprite.prototype.draw = function (angle) {
-        this.context.save();
-        if (angle) {
-            this.context.translate(this.x + this.r, this.y + this.r);
-            this.context.rotate(angle);
-            this.context.translate(-(this.x + this.r), -(this.y + this.r));
+        this.visible = true;
+    }
+    /**
+     * 将精灵图绘制在canvas上
+     */
+    draw() {
+        if (!this.visible)
+            return;
+        lib_1.default.draw(this.stage, this.imgSrc, this.x, this.y, this.width, this.height);
+    }
+    /**
+     * 简单的碰撞检测定义：
+     * 另一个精灵的中心点处于本精灵所在的矩形内即可
+     * @param{Sprite} sp: Sptite的实例
+     */
+    hits(sp) {
+        let spX = sp.x + sp.width / 2;
+        let spY = sp.y + sp.height / 2;
+        if (!this.visible || !sp.visible)
+            return false;
+        return !!(spX >= this.x
+            && spX <= this.x + this.width
+            && spY >= this.y
+            && spY <= this.y + this.height);
+    }
+    touchHits(e, callback) {
+        let touch = e.touches[0];
+        if (this.hits({ x: touch.clientX, y: touch.clientY, width: 0, height: 0, visible: true })) {
+            callback && callback.call(this);
         }
-        if (this.sw && this.sh) {
-            this.context.drawImage(this.img, this.sx, this.sy, this.sw, this.sh, this.x, this.y, this.w, this.h);
-        }
-        else {
-            //不需要剪切
-            this.context.drawImage(this.img, Math.round(this.x), Math.round(this.y), this.w, this.h);
-        }
-        // this.context.drawImage(this.img,10,10);
-        this.context.restore();
-    };
-    return Sprite;
-}());
+    }
+    getCenter() {
+        //圆心位置
+        return [this.x + this.r, this.y + this.r];
+    }
+}
 exports.default = Sprite;
 
 
@@ -735,33 +721,24 @@ exports.default = Sprite;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var Stage = /** @class */ (function () {
-    function Stage(width, height, style) {
+class Stage {
+    constructor(canvas, width, height, style) {
+        this.canvas = canvas;
         this.width = width;
         this.height = height;
         this.style = style;
-        console.log(arguments);
+        this.context = canvas.getContext('2d');
     }
-    Stage.prototype.create = function () {
-        this.elem = document.createElement('canvas');
-        // this.canvas.style ={width: this.width,height:this.height};
-        this.elem.width = this.width;
-        this.elem.height = this.height;
-        this.elem.style.position = 'absolute';
-        return this.elem;
-    };
-    Stage.prototype.remove = function () {
-        this.elem.parentNode.removeChild(this.elem);
-    };
-    //绑定事件回调
-    Stage.prototype.bindEvent = function (callback) {
-        this.elem.addEventListener('touchstart', function (event) {
-            var epos = event.touches[0];
-            callback([epos.pageX, epos.pageY]);
-        }, false);
-    };
-    return Stage;
-}());
+    draw(style) {
+        this.context.fillStyle = this.style;
+        this.context.fillRect(0, 0, this.width, this.height);
+    }
+    //清空布景
+    clear() {
+        this.context.clearRect(0, 0, this.width, this.height);
+        this.draw();
+    }
+}
 exports.default = Stage;
 
 
@@ -777,56 +754,23 @@ exports.default = Stage;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var Title = /** @class */ (function () {
-    function Title(title) {
+const lib_1 = __webpack_require__(/*! ./lib */ "./src/lib.ts");
+class Title {
+    constructor(title, stage) {
         this.title = title;
-        console.log(arguments);
+        this.stage = stage;
+        // console.log(arguments)
     }
-    Title.prototype.create = function (callback) {
-        this.elem = document.createElement('div');
-        this.elem.className = "title";
-        this.elem.style.position = 'absolute';
-        this.elem.innerHTML = this.title;
-        return this.elem;
-    };
-    Title.prototype.remove = function () {
-        this.elem.parentNode.removeChild(this.elem);
-    };
-    return Title;
-}());
+    create(resolve) {
+        lib_1.default.write(this.stage, this.title);
+        lib_1.default.waitMoment(3000);
+        resolve();
+    }
+    remove() {
+        this.stage.clear();
+    }
+}
 exports.default = Title;
-
-
-/***/ }),
-
-/***/ "./src/writeText.ts":
-/*!**************************!*\
-  !*** ./src/writeText.ts ***!
-  \**************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var WriteText = /** @class */ (function () {
-    function WriteText(context) {
-        this.x = 0; //x坐标
-        this.y = 0; //y坐标
-        this.context = context;
-    }
-    WriteText.prototype.write = function (text, x, y, style, fillStyle) {
-        if (style === void 0) { style = ''; }
-        if (fillStyle === void 0) { fillStyle = ''; }
-        this.x = x;
-        this.y = y;
-        this.context.font = style;
-        this.context.fillStyle = fillStyle;
-        this.context.fillText(text, this.x, this.y);
-    };
-    return WriteText;
-}());
-exports.default = WriteText;
 
 
 /***/ })

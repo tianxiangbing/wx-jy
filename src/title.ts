@@ -6,7 +6,7 @@ import lib from './lib';
 
 export default class Title  implements  IScreen{
     constructor(public title:string,private stage:Stage) {
-        console.log(arguments)
+        // console.log(arguments)
     }
     create(resolve) {
         lib.write(this.stage,this.title)

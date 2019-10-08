@@ -46,21 +46,37 @@ export default {
     random(min: number, max: number) {
         return Math.floor(Math.random() * (max - min) + min);
     },
-    caches:{},
-    loadImages(files) {
+    caches: {},
+    loadResources(files) {
         // let cache = {};
-        let arr = []; 
+        let arr = [];
         return new Promise(resolve => {
             for (let k in files) {
-                arr.push(new Promise(resolve => {
-                    let image = wx.createImage();
-                    image.onload = () => {
-                        this.caches[ files[k]] = image;
-                        resolve();
+                if (/\.(jpg|gif|png|bmg|jpeg)/.test(files[k])) {
+                    //图片的预加载
+                    arr.push(new Promise(resolve => {
+                        let image = wx.createImage();
+                        image.onload = () => {
+                            this.caches[files[k]] = image;
+                            resolve();
+                        }
+                        image.src = files[k];
+                    })
+                    )
+                } else
+                    if (/\.(mp3|wav|avi|m4a|aac)/.test(files[k])) {
+                        //音频
+                        arr.push(new Promise(resolve => {
+                            let audio = wx.createInnerAudioContext();
+                            audio.src = files[k];
+                            audio.onCanplay(() => {
+                                console.log(2222)
+                                this.caches[files[k]] = audio;
+                                resolve();
+                            })
+                        })
+                        )
                     }
-                    image.src = files[k];
-                })
-                )
             }
             return Promise.all(arr).catch(() => {
                 console.log('加载资源出错.')
@@ -69,5 +85,9 @@ export default {
                 resolve();
             })
         })
+    },
+    play(url) {
+        //播放声音
+        this.caches[url].play();
     }
 }

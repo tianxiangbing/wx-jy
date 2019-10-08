@@ -5,7 +5,6 @@
 /// <reference path="gameOver.ts" />
 /// <reference path="stage.ts" />
 /// <reference path="control.ts" />
-/// <reference path="score.ts" />
 */
 import Sprite, { SHAPE } from './sprite';
 import Title from './title';
@@ -13,7 +12,6 @@ import Descript from './descript';
 import GameOver from './gameOver';
 import Stage from './stage';
 import Control from './control';
-import Score from './score';
 import lib from './lib';
 
 //游戏主框架
@@ -33,7 +31,6 @@ export default class JY {
     private ispause: boolean = false;//是否处于暂停状态
     protected interval: number = 10;
     protected context: wx.CanvasContext;
-    protected scoreScreen: Score;
     resources:string[]=[];
     constructor(public stage: Stage, public titleStage?: Title, public descriptStage?: Descript, public gameOverStage?: GameOver, public controlStage?: Control) {
         this.context = stage.context;
@@ -47,20 +44,10 @@ export default class JY {
     }
     // 实现游戏帧循环
     async loop() {
-        console.log('loop')
         if (!this.ispause) {
             await this.func();
         }
-        this.aniId = window.requestAnimationFrame(
-            ()=>{
-                console.log('lloop.')
-                this.loop()
-            }
-        )
-    }
-    //分数面板
-    scoreInit() {
-        this.scoreScreen = new Score('--');
+        this.aniId = requestAnimationFrame(this.loop.bind(this));
     }
     createControl() {
     }
@@ -89,7 +76,6 @@ export default class JY {
         //游戏结束
         //清空场景，显示结果
         console.log('gameOver');
-        // this.scoreScreen.remove();
         this.stage.clear();
         this.showGameOver();
     }
@@ -110,7 +96,7 @@ export default class JY {
     }
     showLoading() {
         lib.write(this.stage, '正在加载中')
-        return lib.loadImages(this.resources)
+        return lib.loadResources(this.resources)
     }
     async title() {
         console.log('title....');
@@ -166,17 +152,17 @@ export default class JY {
     setState(state?: STATE) {
         this.currentState = state;
         this.checkState();
-        this.func();
+        // this.func();
     }
     //碰撞检测
     hits(oA: Sprite, oB: Sprite) {
         var bx = false,
             by = false;
-        if (oA.shape == SHAPE.rect) {
-            var bw = oB.w;
-            var aw = oA.w;
-            var bh = oB.h;
-            var ah = oA.h;
+        if (oA.type == SHAPE.rect) {
+            var bw = oB.width;
+            var aw = oA.width;
+            var bh = oB.height;
+            var ah = oA.height;
             if (oA.x > oB.x) {
                 bx = oA.x - oB.x < bw;
             } else if (oA.x < oB.x) {
@@ -192,7 +178,7 @@ export default class JY {
                 by = true;
             };
             return (bx && by);
-        } else if (oA.shape == SHAPE.circle) {
+        } else if (oA.type == SHAPE.circle) {
             var r2 = oA.r + oB.r;
             let oAc = oA.getCenter();
             let oBc = oB.getCenter();
