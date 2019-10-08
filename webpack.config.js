@@ -42,4 +42,13 @@ if (process.env.mode == 'development') {
         ignored: /node_modules///不监测
     }
 }
+if (process.env.mode == 'devBuild') {
+    //开发调试环境编译game.js
+    config.output = {
+        filename: "game.js",
+        path: __dirname + '/dev/'
+    }
+    config.mode='production';
+    config.devtool='none';
+}
 module.exports = config;

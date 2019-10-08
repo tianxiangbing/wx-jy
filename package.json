@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "cross-env mode=development webpack --watch",
+    "build:dev":"cross-env mode=devBuild webpack",
     "build": "cross-env mode=production  webpack",
     "compile": "npm run build",
     "prepublish": "npm run build"

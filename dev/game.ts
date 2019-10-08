@@ -8,6 +8,10 @@ import {
     lib
 } from '../src/index';
 
+wx.showShareMenu({
+withShareTicket: true
+})
+
 const canvas = wx.createCanvas();
 const [height, width] = [canvas.height, canvas.width]
 
@@ -46,6 +50,13 @@ class Ball extends Sprite {
 class Game extends JY {
     frame: number = 0;//帧数
     ballList: Ball[] = [];//所有球的集合
+    score = 0 ;//分数
+    life = 3;
+    reset(){
+        this.score= 0 ;
+        this.life = 3;
+        this.ballList = [];
+    }
     newGame() {
         this.stage.style = "green";
         this.setState(STATE.running);
@@ -57,6 +68,7 @@ class Game extends JY {
                 //触碰回收球并播放声音
                 ball.touchHits(e,()=>{
                     this.ballList.splice(index,1);
+                    this.score ++;
                     lib.play('audio/boom.mp3');
                 })
             });
@@ -73,25 +85,46 @@ class Game extends JY {
             //回收球
             if(!ball.visible){
                 this.ballList.splice(index,1);
+                this.life--;
+                if(this.life<=0){
+                    this.setState(STATE.gameOver);
+                }
             }
         });
+        this.showScore();
+    }
+    //显示分数信息
+    showScore(){
+        lib.write(stage, '生命值：'+this.life,10,20);
+        lib.write(stage, '得分：'+this.score,10,50);
     }
     //创建角色
     createSprite() {
         //100帧创建一个角色
-        if (this.frame % 100 == 0) {
+        var chance = Math.floor(Math.random()*800);
+        if (chance < this.score/5*2+10) {
             let x = lib.random(0, stage.width - 30);
             let w = 40;
             let h = 340 / 120 * w;
             let ball = new Ball(this.stage, 'images/ball.png', w, h, x, this.stage.height);
             // ball.touchHits(this.touch)
+            ball.speed += this.score/3;
             this.ballList.push(ball);
         }
     }
     async gameOver() {
         stage.clear();
-        lib.write(stage, '游戏结束！');
+        lib.write(stage, '游戏结束！总得分：'+this.score);
+        wx.shareAppMessage( {
+            title: '最爱打气球',
+            imageUrl: canvas.toTempFilePathSync({
+            destWidth: 500,
+            destHeight: 400
+            })
+        }
+        )
         await lib.waitMoment(3000);
+        this.reset();
         this.setState(STATE.descript);
     }
 }

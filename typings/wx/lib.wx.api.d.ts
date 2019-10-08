@@ -7245,7 +7245,8 @@ worker.postMessage({
     width:number,
     height:number,
     getContext(contextType:string,contextAttributes?:Object):CanvasContext
-    toDataURL():string
+    toDataURL():string,
+    toTempFilePathSync(option:any):string
   }
   interface Wx {
       createImage():HTMLImageElement;
@@ -10423,6 +10424,7 @@ wx.showShareMenu({
 *
 * 最低基础库： `1.1.0` */
     showShareMenu(option: ShowShareMenuOption): void;
+    shareAppMessage(option:any):void;
     /** [wx.showTabBar(Object object)](wx.showTabBar.md)
      *
      * 显示 tabBar

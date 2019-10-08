@@ -88,6 +88,7 @@ export default {
     },
     play(url) {
         //播放声音
+        this.caches[url].stop();
         this.caches[url].play();
     }
 }
