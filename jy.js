@@ -1,2 +1,956 @@
-!function(t){var e={};function i(s){if(e[s])return e[s].exports;var n=e[s]={i:s,l:!1,exports:{}};return t[s].call(n.exports,n,n.exports,i),n.l=!0,n.exports}i.m=t,i.c=e,i.d=function(t,e,s){i.o(t,e)||Object.defineProperty(t,e,{enumerable:!0,get:s})},i.r=function(t){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(t,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(t,"__esModule",{value:!0})},i.t=function(t,e){if(1&e&&(t=i(t)),8&e)return t;if(4&e&&"object"==typeof t&&t&&t.__esModule)return t;var s=Object.create(null);if(i.r(s),Object.defineProperty(s,"default",{enumerable:!0,value:t}),2&e&&"string"!=typeof t)for(var n in t)i.d(s,n,function(e){return t[e]}.bind(null,n));return s},i.n=function(t){var e=t&&t.__esModule?function(){return t.default}:function(){return t};return i.d(e,"a",e),e},i.o=function(t,e){return Object.prototype.hasOwnProperty.call(t,e)},i.p="",i(i.s=2)}([function(t,e,i){"use strict";var s=this&&this.__awaiter||function(t,e,i,s){return new(i||(i=Promise))((function(n,o){function r(t){try{a(s.next(t))}catch(t){o(t)}}function h(t){try{a(s.throw(t))}catch(t){o(t)}}function a(t){var e;t.done?n(t.value):(e=t.value,e instanceof i?e:new i((function(t){t(e)}))).then(r,h)}a((s=s.apply(t,e||[])).next())}))};Object.defineProperty(e,"__esModule",{value:!0}),e.default={waitMoment(t){return s(this,void 0,void 0,(function*(){return new Promise(e=>{let i=setTimeout(()=>{clearTimeout(i),e()},t)})}))},write(t,e,i,s,n="14px Arial",o="#000000"){let r=t.context;r.font=n,r.fillStyle=o,null==i&&(i=(t.width-14*e.length)/2),null==s&&(s=t.height/2-15),r.fillText(e,i,s)},draw(t,e,i,s,n,o,r,h,a,l){let c=t.context,u=this.caches[e],d=Array.prototype.slice.call(arguments,2);d.unshift(u),console.log("draw",e),c.drawImage.call(c,...d)},random:(t,e)=>Math.floor(Math.random()*(e-t)+t),caches:{},loadResources(t){let e=[];return new Promise(i=>{for(let i in t)/\.(jpg|gif|png|bmg|jpeg)/.test(t[i])?e.push(new Promise(e=>{let s=wx.createImage();s.onload=()=>{this.caches[t[i]]=s,e()},s.src=t[i]})):/\.(mp3|wav|avi|m4a|aac)/.test(t[i])&&e.push(new Promise(e=>{let s=wx.createInnerAudioContext();s.src=t[i],s.onCanplay(()=>{console.log(2222),this.caches[t[i]]=s,e()})}));return Promise.all(e).catch(()=>{console.log("加载资源出错.")}).then(()=>{console.log("加载资源完成."),i()})})},play(t){this.caches[t].play()}}},function(t,e,i){"use strict";Object.defineProperty(e,"__esModule",{value:!0});const s=i(0);var n;!function(t){t[t.rect=0]="rect",t[t.circle=1]="circle"}(n=e.SHAPE||(e.SHAPE={}));e.default=class{constructor(t,e="",i=0,s=0,o=0,r=0){this.stage=t,this.imgSrc=e,this.type=n.rect,this.r=0,this.width=i,this.height=s,this.x=o,this.y=r,this.visible=!0}draw(){this.visible&&s.default.draw(this.stage,this.imgSrc,this.x,this.y,this.width,this.height)}hits(t){let e=t.x+t.width/2,i=t.y+t.height/2;return!(!this.visible||!t.visible)&&!!(e>=this.x&&e<=this.x+this.width&&i>=this.y&&i<=this.y+this.height)}touchHits(t,e){let i=t.touches[0];this.hits({x:i.clientX,y:i.clientY,width:0,height:0,visible:!0})&&e&&e.call(this)}getCenter(){return[this.x+this.r,this.y+this.r]}}},function(t,e,i){"use strict";var s=this&&this.__awaiter||function(t,e,i,s){return new(i||(i=Promise))((function(n,o){function r(t){try{a(s.next(t))}catch(t){o(t)}}function h(t){try{a(s.throw(t))}catch(t){o(t)}}function a(t){var e;t.done?n(t.value):(e=t.value,e instanceof i?e:new i((function(t){t(e)}))).then(r,h)}a((s=s.apply(t,e||[])).next())}))};Object.defineProperty(e,"__esModule",{value:!0});const n=i(3),o=wx.createCanvas(),[r,h]=[o.height,o.width];let a=new n.Stage(o,h,r,"#FFFFFF"),l=new n.Title("打气球",a);l.create=t=>{n.lib.write(a,"一起来打气球"),t()};let c=new n.Descript(a);c.create=t=>s(void 0,void 0,void 0,(function*(){n.lib.draw(a,"images/descript.jpg",0,0,a.width,a.height);let e=new n.Sprite(a,"images/btn-start.png",100,40,(h-100)/2,r-40-40);e.draw(),wx.onTouchStart(i=>{e.touchHits(i,()=>{wx.offTouchStart(),t()})})}));class u extends n.Sprite{constructor(){super(...arguments),this.speed=1}update(){this.y-=this.speed,this.y+this.height<0&&(this.visible=!1)}}let d=new class extends n.JY{constructor(){super(...arguments),this.frame=0,this.ballList=[]}newGame(){this.stage.style="green",this.setState(n.STATE.running),wx.onTouchStart(t=>{let{clientX:e,clientY:i}=t;console.log(e,i),this.ballList.forEach((e,i)=>{e.touchHits(t,()=>{this.ballList.splice(i,1),n.lib.play("audio/boom.mp3")})})})}running(){return s(this,void 0,void 0,(function*(){this.frame++,this.stage.clear(),this.createSprite(),this.ballList.forEach((t,e)=>{t.update(),t.draw(),t.visible||this.ballList.splice(e,1)})}))}createSprite(){if(this.frame%100==0){let t=n.lib.random(0,a.width-30),e=40,i=340/120*e,s=new u(this.stage,"images/ball.png",e,i,t,this.stage.height);this.ballList.push(s)}}gameOver(){return s(this,void 0,void 0,(function*(){a.clear(),n.lib.write(a,"游戏结束！"),yield n.lib.waitMoment(3e3),this.setState(n.STATE.descript)}))}}(a,l,c);d.resources=["images/ball.png","images/btn-start.png","images/descript.jpg","audio/boom.mp3"],d.setup()},function(t,e,i){"use strict";Object.defineProperty(e,"__esModule",{value:!0});const s=i(4);e.JY=s.default,e.STATE=s.STATE;const n=i(5);e.Control=n.default;const o=i(6);e.Descript=o.default;const r=i(7);e.GameOver=r.default;const h=i(1);e.Sprite=h.default;const a=i(8);e.Stage=a.default;const l=i(9);e.Title=l.default;const c=i(0);e.lib=c.default},function(t,e,i){"use strict";var s=this&&this.__awaiter||function(t,e,i,s){return new(i||(i=Promise))((function(n,o){function r(t){try{a(s.next(t))}catch(t){o(t)}}function h(t){try{a(s.throw(t))}catch(t){o(t)}}function a(t){var e;t.done?n(t.value):(e=t.value,e instanceof i?e:new i((function(t){t(e)}))).then(r,h)}a((s=s.apply(t,e||[])).next())}))};Object.defineProperty(e,"__esModule",{value:!0});const n=i(1),o=i(0);var r;!function(t){t[t.loading=0]="loading",t[t.title=1]="title",t[t.descript=2]="descript",t[t.newGame=3]="newGame",t[t.running=4]="running",t[t.gameOver=5]="gameOver"}(r=e.STATE||(e.STATE={}));e.default=class{constructor(t,e,i,s,n){this.stage=t,this.titleStage=e,this.descriptStage=i,this.gameOverStage=s,this.controlStage=n,this.func=new Function,this.ispause=!1,this.interval=10,this.resources=[],this.context=t.context}setup(){this.stage.draw(),this.currentState=r.loading,this.setState(r.loading),this.loop()}loop(){return s(this,void 0,void 0,(function*(){this.ispause||(yield this.func()),this.aniId=requestAnimationFrame(this.loop.bind(this))}))}createControl(){}newGame(){this.setState(r.running)}over(){this.setState(r.gameOver)}pause(){this.ispause=!0,window.cancelAnimationFrame(this.aniId)}play(){this.ispause=!1,this.loop()}gameOver(){console.log("gameOver"),this.stage.clear(),this.showGameOver()}showGameOver(){return s(this,void 0,void 0,(function*(){console.log("game  over..."),yield o.default.waitMoment(3e3)}))}running(){console.log("running...")}loading(){return s(this,void 0,void 0,(function*(){console.log("loading...."),yield this.showLoading(),console.log("loading end..."),this.setState(r.title)}))}showLoading(){return o.default.write(this.stage,"正在加载中"),o.default.loadResources(this.resources)}title(){return s(this,void 0,void 0,(function*(){console.log("title...."),yield this.showTitle(),this.setState(r.descript)}))}showTitle(){return new Promise(t=>{this.titleStage.create(t)})}descript(){return s(this,void 0,void 0,(function*(){console.log("descript..."),yield this.showDescript(),this.setState(r.newGame)}))}showDescript(){return new Promise(t=>{this.descriptStage.create(t)})}proxy(t){return this.stage.clear(),t.bind(this)}checkState(){switch(this.currentState){case r.loading:this.func=this.proxy(this.loading);break;case r.title:this.func=this.proxy(this.title);break;case r.descript:this.func=this.proxy(this.descript);break;case r.newGame:this.func=this.proxy(this.newGame);break;case r.running:this.func=this.proxy(this.running);break;case r.gameOver:this.func=this.proxy(this.gameOver)}}setState(t){this.currentState=t,this.checkState()}hits(t,e){var i=!1,s=!1;if(t.type==n.SHAPE.rect){var o=e.width,r=t.width,h=e.height,a=t.height;return i=t.x>e.x?t.x-e.x<o:!(t.x<e.x)||e.x-t.x<r,s=t.y>e.y?t.y-e.y<h:!(t.y<e.y)||e.y-t.y<a,i&&s}if(t.type==n.SHAPE.circle){var l=t.r+e.r;let n=t.getCenter(),o=e.getCenter();return i=Math.abs(n[0]-o[0])<l,s=Math.abs(n[1]-o[1])<l,i&&s}}}},function(t,e,i){"use strict";Object.defineProperty(e,"__esModule",{value:!0});e.default=class{constructor(){this.rect=[160,160],this.moveRect=[50,50],this.elemPosition=[10,10],this.angle=0}create(){return this.elem=document.createElement("div"),this.elem.className="control",this.elem.style.position="absolute",this.elem.style.width=this.rect[0]+"px",this.elem.style.height=this.rect[1]+"px",this.elem.style.left=this.elemPosition[0]+"%",this.elem.style.bottom=this.elemPosition[1]+"%",this.moveElem=document.createElement("div"),this.moveElem.className="move",this.moveElem.style.position="absolute",this.moveElem.style.width=this.moveRect[0]+"px",this.moveElem.style.height=this.moveRect[1]+"px",this.elem.appendChild(this.moveElem),this.moveCenter=this.moveRect.map((function(t){return t/2})),this.elemCenter=this.rect.map((function(t){return t/2})),this.resetPos(),this.bindEvent(),this.elem}resetPos(){this.toPosition=[0,0],this.transPosition()}transPosition(){let t=this.elemCenter[0]-this.moveCenter[0]+this.toPosition[0],e=this.elemCenter[1]-this.moveCenter[1]-this.toPosition[1];this.moveElem.style.left=t+"px",this.moveElem.style.top=e+"px"}bindEvent(){this.elem.addEventListener("touchstart",function(t){let e=t.touches[0]||t;this.setPosition(e)}.bind(this),!1),this.elem.addEventListener("touchmove",function(t){let e=t.touches[0]||t;this.setPosition(e)}.bind(this),!1),this.elem.addEventListener("touchend",function(t){this.resetPos()}.bind(this),!1)}setPosition(t){this.position=[this.elem.offsetLeft,this.elem.offsetTop];let e=t.pageX-this.position[0],i=t.pageY-this.position[1],s=e-this.elemCenter[0],n=-(i-this.elemCenter[1]);console.log(s,n);let o=Math.atan2(n,s),r=Math.sqrt(s*s+n*n),h=this.elemCenter[0]-this.moveCenter[0];if(r>h){s=Math.cos(o)*h,n=Math.sin(o)*h}this.toPosition=[s,n],this.transPosition()}getAngle(){return this.angle=Math.atan2(this.toPosition[1],this.toPosition[0]),this.angle}remove(){this.elem.parentNode.removeChild(this.elem)}}},function(t,e,i){"use strict";Object.defineProperty(e,"__esModule",{value:!0});e.default=class{constructor(t){this.stage=t,console.log(arguments)}create(t){wx.onTouchStart(()=>{console.log("touch..."),wx.offTouchStart(),t()})}remove(){this.stage.clear()}}},function(t,e,i){"use strict";Object.defineProperty(e,"__esModule",{value:!0});e.default=class{constructor(t){this.btntitle=t}create(t,e=""){this.elem=document.createElement("div"),this.elem.className="gameOver",this.textElem=document.createElement("div"),this.textElem.className="text",this.textElem.innerHTML=e,this.elem.appendChild(this.textElem);let i=document.createElement("button");return i.className="button",i.innerText=this.btntitle,i.addEventListener("touchstart",function(e){t.call(this)}.bind(this),!1),this.elem.appendChild(i),this.elem}setText(t=""){this.textElem.innerHTML=t}remove(){this.elem.parentNode.removeChild(this.elem)}}},function(t,e,i){"use strict";Object.defineProperty(e,"__esModule",{value:!0});e.default=class{constructor(t,e,i,s){this.canvas=t,this.width=e,this.height=i,this.style=s,this.context=t.getContext("2d")}draw(t){this.context.fillStyle=this.style,this.context.fillRect(0,0,this.width,this.height)}clear(){this.context.clearRect(0,0,this.width,this.height),this.draw()}}},function(t,e,i){"use strict";Object.defineProperty(e,"__esModule",{value:!0});const s=i(0);e.default=class{constructor(t,e){this.title=t,this.stage=e}create(t){s.default.write(this.stage,this.title),s.default.waitMoment(3e3),t()}remove(){this.stage.clear()}}}]);
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = "./dev/game.ts");
+/******/ })
+/************************************************************************/
+/******/ ({
+
+/***/ "./dev/game.ts":
+/*!*********************!*\
+  !*** ./dev/game.ts ***!
+  \*********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const index_1 = __webpack_require__(/*! ../src/index */ "./src/index.ts");
+wx.showShareMenu({
+    withShareTicket: true
+});
+const canvas = wx.createCanvas();
+const [height, width] = [canvas.height, canvas.width];
+//创建舞台
+let stage = new index_1.Stage(canvas, width, height, '#FFFFFF');
+let title = new index_1.Title('打气球', stage);
+title.create = (resolve) => {
+    index_1.lib.write(stage, '一起来打气球');
+    resolve();
+};
+let descript = new index_1.Descript(stage);
+descript.create = (resolve) => __awaiter(void 0, void 0, void 0, function* () {
+    index_1.lib.draw(stage, 'images/descript.jpg', 0, 0, stage.width, stage.height);
+    // await lib.waitMoment(3000);
+    //添加开始按钮的Sprite
+    let btn = new index_1.Sprite(stage, 'images/btn-start.png', 100, 40, (width - 100) / 2, height - 40 - 40);
+    btn.draw();
+    wx.onTouchStart((e) => {
+        btn.touchHits(e, () => {
+            wx.offTouchStart();
+            resolve();
+        });
+    });
+});
+//气球类
+class Ball extends index_1.Sprite {
+    constructor() {
+        super(...arguments);
+        this.speed = 1; //速度
+    }
+    //更新位置
+    update() {
+        this.y -= this.speed;
+        if (this.y + this.height < 0) {
+            this.visible = false;
+        }
+    }
+}
+class Game extends index_1.JY {
+    constructor() {
+        super(...arguments);
+        this.frame = 0; //帧数
+        this.ballList = []; //所有球的集合
+        this.score = 0; //分数
+        this.life = 3;
+    }
+    reset() {
+        this.score = 0;
+        this.life = 3;
+        this.ballList = [];
+    }
+    newGame() {
+        this.stage.style = "green";
+        this.setState(index_1.STATE.running);
+        //事件绑定
+        wx.onTouchStart(e => {
+            let { clientX, clientY } = e;
+            console.log(clientX, clientY);
+            this.ballList.forEach((ball, index) => {
+                //触碰回收球并播放声音
+                ball.touchHits(e, () => {
+                    this.ballList.splice(index, 1);
+                    this.score++;
+                    index_1.lib.play('audio/boom.mp3');
+                });
+            });
+        });
+    }
+    running() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.frame++;
+            //先清空场景
+            this.stage.clear();
+            this.createSprite();
+            this.ballList.forEach((ball, index) => {
+                ball.update();
+                ball.draw();
+                //回收球
+                if (!ball.visible) {
+                    this.ballList.splice(index, 1);
+                    this.life--;
+                    if (this.life <= 0) {
+                        this.setState(index_1.STATE.gameOver);
+                    }
+                }
+            });
+            this.showScore();
+        });
+    }
+    //显示分数信息
+    showScore() {
+        index_1.lib.write(stage, '生命值：' + this.life, 10, 20);
+        index_1.lib.write(stage, '得分：' + this.score, 10, 50);
+    }
+    //创建角色
+    createSprite() {
+        //100帧创建一个角色
+        var chance = Math.floor(Math.random() * 800);
+        if (chance < this.score / 5 * 2 + 10) {
+            let x = index_1.lib.random(0, stage.width - 30);
+            let w = 40;
+            let h = 340 / 120 * w;
+            let ball = new Ball(this.stage, 'images/ball.png', w, h, x, this.stage.height);
+            // ball.touchHits(this.touch)
+            ball.speed += this.score / 3;
+            this.ballList.push(ball);
+        }
+    }
+    gameOver() {
+        return __awaiter(this, void 0, void 0, function* () {
+            stage.clear();
+            index_1.lib.write(stage, '游戏结束！总得分：' + this.score);
+            wx.shareAppMessage({
+                title: '最爱打气球',
+                imageUrl: canvas.toTempFilePathSync({
+                    destWidth: 500,
+                    destHeight: 400
+                })
+            });
+            yield index_1.lib.waitMoment(3000);
+            this.reset();
+            this.setState(index_1.STATE.descript);
+        });
+    }
+}
+let mygame = new Game(stage, title, descript);
+mygame.resources = [
+    'images/ball.png',
+    'images/btn-start.png',
+    'images/descript.jpg',
+    'audio/boom.mp3'
+];
+mygame.setup();
+
+
+/***/ }),
+
+/***/ "./src/control.ts":
+/*!************************!*\
+  !*** ./src/control.ts ***!
+  \************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+//操作界面
+class Control {
+    constructor() {
+        this.rect = [160, 160];
+        this.moveRect = [50, 50];
+        this.elemPosition = [10, 10];
+        this.angle = 0; //角度
+    }
+    create() {
+        this.elem = document.createElement('div');
+        this.elem.className = "control";
+        this.elem.style.position = 'absolute';
+        this.elem.style.width = this.rect[0] + 'px';
+        this.elem.style.height = this.rect[1] + 'px';
+        this.elem.style.left = this.elemPosition[0] + '%';
+        this.elem.style.bottom = this.elemPosition[1] + '%';
+        this.moveElem = document.createElement('div');
+        this.moveElem.className = 'move';
+        this.moveElem.style.position = 'absolute';
+        this.moveElem.style.width = this.moveRect[0] + 'px';
+        this.moveElem.style.height = this.moveRect[1] + 'px';
+        this.elem.appendChild(this.moveElem);
+        this.moveCenter = this.moveRect.map(function (d) { return d / 2; });
+        this.elemCenter = this.rect.map(function (d) { return d / 2; });
+        this.resetPos();
+        this.bindEvent();
+        return this.elem;
+    }
+    resetPos() {
+        //重置位置
+        // console.log(this.moveCenter)
+        this.toPosition = [0, 0];
+        this.transPosition();
+    }
+    //传入圆心转换成坐标,
+    transPosition() {
+        let x = (this.elemCenter[0] - this.moveCenter[0]) + this.toPosition[0];
+        let y = (this.elemCenter[1] - this.moveCenter[1]) - this.toPosition[1];
+        this.moveElem.style.left = x + 'px';
+        this.moveElem.style.top = y + 'px';
+    }
+    bindEvent() {
+        this.elem.addEventListener('touchstart', function (event) {
+            let epos = event.touches[0] || event;
+            this.setPosition(epos);
+        }.bind(this), false);
+        this.elem.addEventListener('touchmove', function (event) {
+            let epos = event.touches[0] || event;
+            this.setPosition(epos);
+        }.bind(this), false);
+        this.elem.addEventListener('touchend', function (event) {
+            this.resetPos();
+        }.bind(this), false);
+    }
+    // 计算边界值,设置位置
+    setPosition(epos) {
+        this.position = [this.elem.offsetLeft, this.elem.offsetTop];
+        let x = epos.pageX - this.position[0];
+        let y = epos.pageY - this.position[1];
+        // x= Math.min (x,this.rect[0]-this.moveCenter[0]);
+        // x = Math.max(x,this.moveCenter[0])
+        let x1 = (x - this.elemCenter[0]); //相对于圆点的位置
+        let y1 = -(y - this.elemCenter[1]);
+        console.log(x1, y1);
+        let ang = Math.atan2(y1, x1);
+        // this.angle = ang;
+        // console.log('角度：'+ang)
+        let c = Math.sqrt(x1 * x1 + y1 * y1);
+        let r = this.elemCenter[0] - this.moveCenter[0]; //最长半径
+        if (c > r) {
+            // console.log('out', c)
+            let x2 = Math.cos(ang) * r;
+            let y2 = Math.sin(ang) * r;
+            //下面是另一种算法
+            // y2=y1*r/c;
+            // x2= x1*r/c;
+            // console.log('xy:', x1, y1)
+            // console.log('x2y2:',x2, y2)
+            x1 = x2;
+            y1 = y2;
+        }
+        this.toPosition = [x1, y1];
+        this.transPosition();
+    }
+    getAngle() {
+        // console.log(this.toPosition)
+        this.angle = Math.atan2(this.toPosition[1], this.toPosition[0]);
+        return this.angle;
+    }
+    //获取到角度
+    remove() {
+        this.elem.parentNode.removeChild(this.elem);
+    }
+}
+exports.default = Control;
+
+
+/***/ }),
+
+/***/ "./src/descript.ts":
+/*!*************************!*\
+  !*** ./src/descript.ts ***!
+  \*************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+//描述设计
+class Descript {
+    constructor(stage) {
+        this.stage = stage;
+        console.log(arguments);
+    }
+    create(resolve) {
+        wx.onTouchStart(() => {
+            console.log('touch...');
+            wx.offTouchStart();
+            resolve();
+        });
+    }
+    remove() {
+        this.stage.clear();
+    }
+}
+exports.default = Descript;
+
+
+/***/ }),
+
+/***/ "./src/gameOver.ts":
+/*!*************************!*\
+  !*** ./src/gameOver.ts ***!
+  \*************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+class GameOver {
+    constructor(btntitle) {
+        this.btntitle = btntitle;
+    }
+    create(callback, text = '') {
+        this.elem = document.createElement('div');
+        this.elem.className = 'gameOver';
+        this.textElem = document.createElement('div');
+        this.textElem.className = 'text';
+        this.textElem.innerHTML = text;
+        this.elem.appendChild(this.textElem);
+        let btn = document.createElement('button');
+        btn.className = "button";
+        btn.innerText = this.btntitle;
+        btn.addEventListener('touchstart', function (event) {
+            callback.call(this);
+        }.bind(this), false);
+        // btn.onclick = callback.bind(this);
+        this.elem.appendChild(btn);
+        return this.elem;
+    }
+    setText(text = '') {
+        this.textElem.innerHTML = text;
+    }
+    remove() {
+        this.elem.parentNode.removeChild(this.elem);
+    }
+}
+exports.default = GameOver;
+
+
+/***/ }),
+
+/***/ "./src/index.ts":
+/*!**********************!*\
+  !*** ./src/index.ts ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+__webpack_require__(/*! ./wx-adpater */ "./src/wx-adpater.ts");
+const jy_1 = __webpack_require__(/*! ./jy */ "./src/jy.ts");
+exports.JY = jy_1.default;
+exports.STATE = jy_1.STATE;
+const control_1 = __webpack_require__(/*! ./control */ "./src/control.ts");
+exports.Control = control_1.default;
+const descript_1 = __webpack_require__(/*! ./descript */ "./src/descript.ts");
+exports.Descript = descript_1.default;
+const gameOver_1 = __webpack_require__(/*! ./gameOver */ "./src/gameOver.ts");
+exports.GameOver = gameOver_1.default;
+const sprite_1 = __webpack_require__(/*! ./sprite */ "./src/sprite.ts");
+exports.Sprite = sprite_1.default;
+const stage_1 = __webpack_require__(/*! ./stage */ "./src/stage.ts");
+exports.Stage = stage_1.default;
+const title_1 = __webpack_require__(/*! ./title */ "./src/title.ts");
+exports.Title = title_1.default;
+const lib_1 = __webpack_require__(/*! ../src/lib */ "./src/lib.ts");
+exports.lib = lib_1.default;
+
+
+/***/ }),
+
+/***/ "./src/jy.ts":
+/*!*******************!*\
+  !*** ./src/jy.ts ***!
+  \*******************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+/*
+/// <reference path="sprite.ts" />
+/// <reference path="title.ts" />
+/// <reference path="descript.ts" />
+/// <reference path="gameOver.ts" />
+/// <reference path="stage.ts" />
+/// <reference path="control.ts" />
+*/
+const sprite_1 = __webpack_require__(/*! ./sprite */ "./src/sprite.ts");
+const lib_1 = __webpack_require__(/*! ./lib */ "./src/lib.ts");
+//游戏主框架
+var STATE;
+(function (STATE) {
+    STATE[STATE["loading"] = 0] = "loading";
+    STATE[STATE["title"] = 1] = "title";
+    STATE[STATE["descript"] = 2] = "descript";
+    STATE[STATE["newGame"] = 3] = "newGame";
+    STATE[STATE["running"] = 4] = "running";
+    STATE[STATE["gameOver"] = 5] = "gameOver";
+})(STATE = exports.STATE || (exports.STATE = {}));
+class JY {
+    constructor(stage, titleStage, descriptStage, gameOverStage, controlStage) {
+        this.stage = stage;
+        this.titleStage = titleStage;
+        this.descriptStage = descriptStage;
+        this.gameOverStage = gameOverStage;
+        this.controlStage = controlStage;
+        this.func = new Function;
+        this.ispause = false; //是否处于暂停状态
+        this.interval = 10;
+        this.resources = [];
+        this.context = stage.context;
+        // this.setup();
+    }
+    setup() {
+        this.stage.draw();
+        this.currentState = STATE.loading;
+        this.setState(STATE.loading);
+        this.loop();
+    }
+    // 实现游戏帧循环
+    loop() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.ispause) {
+                yield this.func();
+            }
+            this.aniId = requestAnimationFrame(this.loop.bind(this));
+        });
+    }
+    createControl() {
+    }
+    //新的开始
+    newGame() {
+        //游戏开始，清空场景
+        //打开计时器
+        this.setState(STATE.running);
+    }
+    //结束 
+    over() {
+        this.setState(STATE.gameOver);
+    }
+    //暂停
+    pause() {
+        this.ispause = true;
+        window.cancelAnimationFrame(this.aniId);
+    }
+    //暂停后的继续
+    play() {
+        this.ispause = false;
+        this.loop();
+    }
+    //游戏结束
+    gameOver() {
+        //游戏结束
+        //清空场景，显示结果
+        console.log('gameOver');
+        this.stage.clear();
+        this.showGameOver();
+    }
+    //结束画面
+    showGameOver() {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('game  over...');
+            yield lib_1.default.waitMoment(3000);
+        });
+    }
+    //游戏中的
+    running() {
+        console.log('running...');
+    }
+    loading() {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('loading....');
+            yield this.showLoading();
+            console.log('loading end...');
+            this.setState(STATE.title);
+        });
+    }
+    showLoading() {
+        lib_1.default.write(this.stage, '正在加载中');
+        return lib_1.default.loadResources(this.resources);
+    }
+    title() {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('title....');
+            yield this.showTitle();
+            this.setState(STATE.descript);
+        });
+    }
+    showTitle() {
+        // this.titleStage.create()
+        // return lib.waitMoment(3000);
+        return new Promise(resolve => {
+            this.titleStage.create(resolve);
+        });
+    }
+    descript() {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('descript...');
+            yield this.showDescript();
+            this.setState(STATE.newGame);
+        });
+    }
+    showDescript() {
+        return new Promise(resolve => {
+            this.descriptStage.create(resolve);
+        });
+        // return lib.waitMoment(3000);
+    }
+    proxy(stageFunc) {
+        this.stage.clear();
+        return stageFunc.bind(this);
+    }
+    //检查状态
+    checkState() {
+        switch (this.currentState) {
+            case STATE.loading:
+                this.func = this.proxy(this.loading);
+                break;
+            case STATE.title:
+                this.func = this.proxy(this.title);
+                break;
+            case STATE.descript:
+                this.func = this.proxy(this.descript);
+                break;
+            case STATE.newGame:
+                this.func = this.proxy(this.newGame);
+                break;
+            case STATE.running:
+                this.func = this.proxy(this.running);
+                break;
+            case STATE.gameOver:
+                this.func = this.proxy(this.gameOver);
+            default:
+                break;
+        }
+    }
+    setState(state) {
+        this.currentState = state;
+        this.checkState();
+        // this.func();
+    }
+    //碰撞检测
+    hits(oA, oB) {
+        var bx = false, by = false;
+        if (oA.type == sprite_1.SHAPE.rect) {
+            var bw = oB.width;
+            var aw = oA.width;
+            var bh = oB.height;
+            var ah = oA.height;
+            if (oA.x > oB.x) {
+                bx = oA.x - oB.x < bw;
+            }
+            else if (oA.x < oB.x) {
+                bx = oB.x - oA.x < aw;
+            }
+            else {
+                bx = true;
+            }
+            ;
+            if (oA.y > oB.y) {
+                by = oA.y - oB.y < bh;
+            }
+            else if (oA.y < oB.y) {
+                by = oB.y - oA.y < ah;
+            }
+            else {
+                by = true;
+            }
+            ;
+            return (bx && by);
+        }
+        else if (oA.type == sprite_1.SHAPE.circle) {
+            var r2 = oA.r + oB.r;
+            let oAc = oA.getCenter();
+            let oBc = oB.getCenter();
+            bx = Math.abs(oAc[0] - oBc[0]) < r2;
+            by = Math.abs(oAc[1] - oBc[1]) < r2;
+            return (bx && by);
+        }
+    }
+}
+exports.default = JY;
+
+
+/***/ }),
+
+/***/ "./src/lib.ts":
+/*!********************!*\
+  !*** ./src/lib.ts ***!
+  \********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = {
+    /*
+    * 暂停一段时间
+    */
+    //暂停一段时间
+    waitMoment(second) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise(resolve => {
+                let t = setTimeout(() => {
+                    clearTimeout(t);
+                    resolve();
+                }, second);
+            });
+        });
+    },
+    //显示文字
+    write(stage, text, x, y, font = "14px Arial", fillStyle = '#000000') {
+        let context = stage.context;
+        context.font = font;
+        context.fillStyle = fillStyle;
+        if (x == undefined) {
+            x = (stage.width - text.length * 14) / 2;
+        }
+        if (y == undefined) {
+            y = stage.height / 2 - 15;
+        }
+        context.fillText(text, x, y);
+    },
+    //导入图片
+    draw(stage, img, dx, dy, dWidth, dHeight, sx, sy, sWidth, sHeight) {
+        let context = stage.context;
+        // let image = wx.createImage();
+        let image = this.caches[img];
+        let args = Array.prototype.slice.call(arguments, 2);
+        args.unshift(image);
+        console.log('draw', img);
+        // image.onload = ()=>{
+        //     context.drawImage.call(context,...args);
+        // } 
+        // image.src = img;
+        context.drawImage.call(context, ...args);
+    },
+    //取区间数的随机值
+    random(min, max) {
+        return Math.floor(Math.random() * (max - min) + min);
+    },
+    caches: {},
+    loadResources(files) {
+        // let cache = {};
+        let arr = [];
+        return new Promise(resolve => {
+            for (let k in files) {
+                if (/\.(jpg|gif|png|bmg|jpeg)/.test(files[k])) {
+                    //图片的预加载
+                    arr.push(new Promise(resolve => {
+                        let image = wx.createImage();
+                        image.onload = () => {
+                            this.caches[files[k]] = image;
+                            resolve();
+                        };
+                        image.src = files[k];
+                    }));
+                }
+                else if (/\.(mp3|wav|avi|m4a|aac)/.test(files[k])) {
+                    //音频
+                    arr.push(new Promise(resolve => {
+                        let audio = wx.createInnerAudioContext();
+                        audio.src = files[k];
+                        audio.onCanplay(() => {
+                            console.log(2222);
+                            this.caches[files[k]] = audio;
+                            resolve();
+                        });
+                    }));
+                }
+            }
+            return Promise.all(arr).catch(() => {
+                console.log('加载资源出错.');
+            }).then(() => {
+                console.log('加载资源完成.');
+                resolve();
+            });
+        });
+    },
+    play(url) {
+        //播放声音
+        this.caches[url].stop();
+        this.caches[url].play();
+    }
+};
+
+
+/***/ }),
+
+/***/ "./src/sprite.ts":
+/*!***********************!*\
+  !*** ./src/sprite.ts ***!
+  \***********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const lib_1 = __webpack_require__(/*! ./lib */ "./src/lib.ts");
+//sprite
+//形状
+var SHAPE;
+(function (SHAPE) {
+    SHAPE[SHAPE["rect"] = 0] = "rect";
+    SHAPE[SHAPE["circle"] = 1] = "circle";
+})(SHAPE = exports.SHAPE || (exports.SHAPE = {}));
+/**
+ * 游戏基础的精灵类
+ */
+class Sprite {
+    constructor(stage, imgSrc = '', width = 0, height = 0, x = 0, y = 0) {
+        this.stage = stage;
+        this.imgSrc = imgSrc;
+        this.type = SHAPE.rect;
+        this.r = 0; //半径
+        this.width = width;
+        this.height = height;
+        this.x = x;
+        this.y = y;
+        this.visible = true;
+    }
+    /**
+     * 将精灵图绘制在canvas上
+     */
+    draw() {
+        if (!this.visible)
+            return;
+        lib_1.default.draw(this.stage, this.imgSrc, this.x, this.y, this.width, this.height);
+    }
+    /**
+     * 简单的碰撞检测定义：
+     * 另一个精灵的中心点处于本精灵所在的矩形内即可
+     * @param{Sprite} sp: Sptite的实例
+     */
+    hits(sp) {
+        let spX = sp.x + sp.width / 2;
+        let spY = sp.y + sp.height / 2;
+        if (!this.visible || !sp.visible)
+            return false;
+        return !!(spX >= this.x
+            && spX <= this.x + this.width
+            && spY >= this.y
+            && spY <= this.y + this.height);
+    }
+    touchHits(e, callback) {
+        let touch = e.touches[0];
+        if (this.hits({ x: touch.clientX, y: touch.clientY, width: 0, height: 0, visible: true })) {
+            callback && callback.call(this);
+        }
+    }
+    getCenter() {
+        //圆心位置
+        return [this.x + this.r, this.y + this.r];
+    }
+}
+exports.default = Sprite;
+
+
+/***/ }),
+
+/***/ "./src/stage.ts":
+/*!**********************!*\
+  !*** ./src/stage.ts ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+class Stage {
+    constructor(canvas, width, height, style) {
+        this.canvas = canvas;
+        this.width = width;
+        this.height = height;
+        this.style = style;
+        this.context = canvas.getContext('2d');
+    }
+    draw(style) {
+        this.context.fillStyle = this.style;
+        this.context.fillRect(0, 0, this.width, this.height);
+    }
+    //清空布景
+    clear() {
+        this.context.clearRect(0, 0, this.width, this.height);
+        this.draw();
+    }
+}
+exports.default = Stage;
+
+
+/***/ }),
+
+/***/ "./src/title.ts":
+/*!**********************!*\
+  !*** ./src/title.ts ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const lib_1 = __webpack_require__(/*! ./lib */ "./src/lib.ts");
+class Title {
+    constructor(title, stage) {
+        this.title = title;
+        this.stage = stage;
+        // console.log(arguments)
+    }
+    create(resolve) {
+        lib_1.default.write(this.stage, this.title);
+        lib_1.default.waitMoment(3000);
+        resolve();
+    }
+    remove() {
+        this.stage.clear();
+    }
+}
+exports.default = Title;
+
+
+/***/ }),
+
+/***/ "./src/wx-adpater.ts":
+/*!***************************!*\
+  !*** ./src/wx-adpater.ts ***!
+  \***************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+/**
+ * 对h5和wx进行兼容处理
+ */
+if (!window['wx']) {
+}
+
+
+/***/ })
+
+/******/ });
 //# sourceMappingURL=jy.js.map

@@ -46,6 +46,9 @@
 
 	'use strict'
 
+	if (!window['wx']) {
+		return {};
+	}
 	var _window2 = __webpack_require__(1)
 
 	var _window = _interopRequireWildcard(_window2)
@@ -109,7 +112,9 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict'
-
+	if (!window['wx']) {
+		return {};
+	}
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	})

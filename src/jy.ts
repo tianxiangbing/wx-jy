@@ -13,7 +13,7 @@ import GameOver from './gameOver';
 import Stage from './stage';
 import Control from './control';
 import lib from './lib';
-
+import './adpater';
 //游戏主框架
 export enum STATE {
     loading,
@@ -30,7 +30,7 @@ export default class JY {
     private currentState: STATE;
     private ispause: boolean = false;//是否处于暂停状态
     protected interval: number = 10;
-    protected context: wx.CanvasContext;
+    protected context: CanvasRenderingContext2D;
     resources:string[]=[];
     constructor(public stage: Stage, public titleStage?: Title, public descriptStage?: Descript, public gameOverStage?: GameOver, public controlStage?: Control) {
         this.context = stage.context;

@@ -7,9 +7,9 @@ export default class Descript  implements  IScreen{
         console.log(arguments)
     }
     create(resolve:Function) {
-       wx.onTouchStart(() => {
+       this.stage.canvas.addEventListener('touchstart',() => {
             console.log('touch...')
-            wx.offTouchStart();
+            // this.stage.canvas.removeEventListener('touchstart');
             resolve()
         })
     }

@@ -7,122 +7,173 @@ import {
     Sprite,
     lib
 } from '../src/index';
-
-wx.showShareMenu({
-withShareTicket: true
-})
-
-const canvas = wx.createCanvas();
+import { SHAPE } from '../src/sprite';
+import Hero, { EDirection } from './js/hero';
+import Socket from './js/socket';
+const canvas = lib.createCanvas();
 const [height, width] = [canvas.height, canvas.width]
 
 //创建舞台
 let stage = new Stage(canvas, width, height, '#FFFFFF');
-let title = new Title('打气球', stage);
+let title = new Title('弑神', stage);
 title.create = (resolve) => {
-    lib.write(stage, '一起来打气球')
+    lib.write(stage, '弑神')
     resolve();
 }
 let descript = new Descript(stage)
 descript.create = async (resolve) => {
-    lib.draw(stage, 'images/descript.jpg', 0, 0, stage.width, stage.height)
+    lib.draw(stage, 'images/descript.png', 0, 0, stage.width, stage.height)
     // await lib.waitMoment(3000);
     //添加开始按钮的Sprite
-    let btn = new Sprite(stage, 'images/btn-start.png', 100, 40, (width - 100) / 2, height - 40 - 40);
+    // let btn = new Sprite(stage, SHAPE.rect, 'images/btn-start.png', 100, 40, (width - 100) / 2, height - 40 - 40);
+    let btn = new Sprite(stage, SHAPE.text, {text:'开始'}, 100, 40, (width - 100) / 2, height - 40 - 40);
     btn.draw();
-    wx.onTouchStart((e) => {
+    lib.addEventListener(stage.canvas,'touchstart',(e) => {
+        console.log(1111)
         btn.touchHits(e,()=>{
-            wx.offTouchStart();
+            console.log(222)
+            lib.removeEventListener(stage.canvas,'touchstart')
             resolve()
         })
     });
 }
-//气球类
-class Ball extends Sprite {
-    speed: number = 1;//速度
-    //更新位置
-    update() {
-        this.y -= this.speed;
-        if (this.y+this.height < 0) {
-            this.visible = false;
-        }
-    }
-}
 class Game extends JY {
     frame: number = 0;//帧数
-    ballList: Ball[] = [];//所有球的集合
     score = 0 ;//分数
-    life = 3;
+    life = 10;
+    heros:Array<Hero>=[];
+    currentHero :Hero;
     reset(){
         this.score= 0 ;
-        this.life = 3;
-        this.ballList = [];
+        this.life = 10;
     }
     newGame() {
-        this.stage.style = "green";
+        this.stage.style = "#eeeeee";
+        this.reset();
         this.setState(STATE.running);
+        this.createHero();
         //事件绑定
-        wx.onTouchStart(e => {
+        lib.addEventListener(this.stage.canvas,'touchstart',e => {
+            console.log(555)
             let { clientX, clientY } = e;
             console.log(clientX, clientY)
-            this.ballList.forEach((ball,index) => {
-                //触碰回收球并播放声音
-                ball.touchHits(e,()=>{
-                    this.ballList.splice(index,1);
-                    this.score ++;
-                    lib.play('audio/boom.mp3');
-                })
-            });
         });
+        this.onEvent();
     }
-    async running() {
-        this.frame++;
-        //先清空场景
-        this.stage.clear();
-        this.createSprite();
-        this.ballList.forEach((ball,index) => {
-            ball.update();
-            ball.draw();
-            //回收球
-            if(!ball.visible){
-                this.ballList.splice(index,1);
-                this.life--;
-                if(this.life<=0){
-                    this.setState(STATE.gameOver);
+    //绑定操作事件
+    onEvent(){
+        lib.addEventListener(window,'keyup',e =>{
+            this.currentHero.stop();
+        })
+        lib.addEventListener(window,'keydown',e =>{
+            switch(e.key){
+                case 'ArrowRight':
+                case 'd':{
+                    this.currentHero.move(EDirection.right);
+                    break;
+                }
+                case 'ArrowLeft':
+                case 'a':{
+                    this.currentHero.move(EDirection.left);
+                    break;
+                }
+                case 'ArrowUp':
+                case 'w':{
+                    this.currentHero.move(EDirection.up);
+                    break;
+                }
+                case 'ArrowDown':
+                case 's':{
+                    this.currentHero.move(EDirection.down);
+                    break;
                 }
             }
-        });
+        })
+    }
+    async running() {
+        //先清空场景
+        this.stage.clear();
+        this.frame++;
         this.showScore();
+        this.showHeros();
     }
     //显示分数信息
     showScore(){
-        lib.write(stage, '生命值：'+this.life,10,20);
-        lib.write(stage, '得分：'+this.score,10,50);
+        lib.write(stage, ''+this.life,10,20);
+        lib.write(stage, ''+this.score,10,50);
     }
     //创建角色
-    createSprite() {
-        //100帧创建一个角色
-        var chance = Math.floor(Math.random()*800);
-        if (chance < this.score/5*2+10) {
-            let x = lib.random(0, stage.width - 30);
-            let w = 40;
-            let h = 340 / 120 * w;
-            let ball = new Ball(this.stage, 'images/ball.png', w, h, x, this.stage.height);
-            // ball.touchHits(this.touch)
-            ball.speed += this.score/3;
-            this.ballList.push(ball);
-        }
+    createHero() {
+        let stage = this.stage;
+        let hero = new Hero(stage,SHAPE.circle,'images/role.png',50,100,stage.width/2-25,stage.height-100)
+        hero.socket = new Socket();
+        hero.socket.conect(u=>{
+            hero.name= u.uid;
+            hero.socket.update(hero);
+            document.getElementById('msgcontent').style.display= 'block';
+            document.getElementById('send').onclick=()=>{
+                if(document.getElementById('msg').value){
+                    let msg = document.getElementById('msg').value;
+                    hero.socket.talk(msg)
+                    document.getElementById('msg').value = ''
+                }
+            }
+        });
+        hero.socket.joinroom(1);
+        hero.socket.listen(msg=>{
+            // debugger
+            // console.log(msg)
+            switch(msg.type){
+                case 'JOIN':{
+                    let {peoples} = msg.body;
+                    peoples.forEach(p=>{
+                        let h = new Hero(stage,SHAPE.circle,'images/role.png',50,100,p.x,p.y) 
+                        h.name = p.uid;
+                        this.heros.push(h);
+                    })
+                    break;
+                }
+                case 'update':{
+                    this.heros.forEach(p=>{
+                        if(msg.user == p.name){
+                            let {x,y} = msg.body;
+                            p.x = x;
+                            p.y = y;
+                        }
+                    })
+                    break;
+                }
+                case 'LEAVE':{
+                    this.heros.forEach((item,index)=>{
+                        let id = msg.body.user;
+                        if(item.name == id){
+                            this.heros.splice(index,1);
+                        }
+                    })
+                    break;
+                }
+                case 'TALK':{
+                    this.heros.forEach((item,index)=>{
+                        let id = msg.user;
+                        if(item.name == id){
+                            item.talk(msg.body)
+                        }
+                    })
+                    break;
+                }
+            }
+        })
+        this.currentHero = hero;
+        // this.heros.push(hero);
+    }
+    showHeros(){
+        this.heros.forEach(item=>{
+            item.draw();
+        })
     }
     async gameOver() {
         stage.clear();
-        lib.write(stage, '游戏结束！总得分：'+this.score);
-        wx.shareAppMessage( {
-            title: '最爱打气球',
-            imageUrl: canvas.toTempFilePathSync({
-            destWidth: 500,
-            destHeight: 400
-            })
-        }
-        )
+        lib.write(stage, '游戏结束！');
         await lib.waitMoment(3000);
         this.reset();
         this.setState(STATE.descript);
@@ -131,9 +182,9 @@ class Game extends JY {
 
 let mygame = new Game(stage, title, descript);
 mygame.resources = [
-    'images/ball.png',
+    'images/role.png',
     'images/btn-start.png',
-    'images/descript.jpg',
+    'images/descript.png',
     'audio/boom.mp3'
 ];
 mygame.setup()

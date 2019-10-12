@@ -4,8 +4,9 @@ import { Stage } from ".";
 //sprite
 //形状
 export enum SHAPE {
-    rect,
-    circle
+    rect,//矩形
+    circle,//圆
+    text//文本
 }
 interface SP {
     x: number,
@@ -24,16 +25,13 @@ export default class Sprite implements SP {
     x: number;
     y: number;
     visible: boolean;
-    type: SHAPE = SHAPE.rect;
+    // type: SHAPE = SHAPE.rect;
     r:number = 0 ;//半径
-    constructor(public stage: Stage, public imgSrc = '', width = 0, height = 0, x = 0, y = 0) {
-
+    constructor(public stage: Stage,public type:SHAPE = SHAPE.rect, public content:any|string = '', width = 0, height = 0, x = 0, y = 0) {
         this.width = width
         this.height = height
-
         this.x = x
         this.y = y
-
         this.visible = true
     }
 
@@ -43,14 +41,18 @@ export default class Sprite implements SP {
     draw() {
         if (!this.visible)
             return
-        lib.draw(
-            this.stage,
-            this.imgSrc,
-            this.x,
-            this.y,
-            this.width,
-            this.height
-        )
+        if(this.type ===SHAPE.text){
+            lib.write(this.stage,this.content.text,this.x,this.y,this.content.font,this.content.fillStyle);
+        }else{
+            lib.draw(
+                this.stage,
+                this.content,
+                this.x,
+                this.y,
+                this.width,
+                this.height
+            )
+        }
     }
 
     /**

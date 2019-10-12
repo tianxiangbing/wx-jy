@@ -7252,7 +7252,7 @@ worker.postMessage({
       createImage():HTMLImageElement;
       offTouchStart();
       onTouchStart(arg0: (e) => void);
-      createCanvas():Canvas;
+      createCanvas():HTMLCanvasElement;
     /** [Object wx.getAccountInfoSync()](wx.getAccountInfoSync.md)
 *
 * 获取当前帐号信息
