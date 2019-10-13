@@ -4,6 +4,7 @@
   "description": "",
   "main": "jy.js",
   "scripts": {
+    "start": "npm run dev:h5",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "cross-env mode=development webpack --watch",
     "dev:h5": "cross-env mode=development type=h5  webpack-dev-server",

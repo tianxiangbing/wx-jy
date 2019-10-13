@@ -10,6 +10,7 @@ import {
 import { SHAPE } from '../src/sprite';
 import Hero, { EDirection } from './js/hero';
 import Socket from './js/socket';
+import Bg from './js/bg';
 const canvas = lib.createCanvas();
 const [height, width] = [canvas.height, canvas.width]
 
@@ -43,12 +44,15 @@ class Game extends JY {
     life = 10;
     heros:Array<Hero>=[];
     currentHero :Hero;
+    bg:Bg;
     reset(){
         this.score= 0 ;
         this.life = 10;
     }
     newGame() {
         this.stage.style = "#eeeeee";
+        this.bg = new Bg();
+        this.bg.create(this.stage);
         this.reset();
         this.setState(STATE.running);
         this.createHero();
@@ -93,6 +97,7 @@ class Game extends JY {
     async running() {
         //先清空场景
         this.stage.clear();
+        this.bg.draw();
         this.frame++;
         this.showScore();
         this.showHeros();
@@ -105,17 +110,18 @@ class Game extends JY {
     //创建角色
     createHero() {
         let stage = this.stage;
-        let hero = new Hero(stage,SHAPE.circle,'images/role.png',50,100,stage.width/2-25,stage.height-100)
+        let hero = new Hero(stage,SHAPE.circle,'',21,57,stage.width/2-25,stage.height-100)
         hero.socket = new Socket();
         hero.socket.conect(u=>{
             hero.name= u.uid;
             hero.socket.update(hero);
             document.getElementById('msgcontent').style.display= 'block';
             document.getElementById('send').onclick=()=>{
-                if(document.getElementById('msg').value){
-                    let msg = document.getElementById('msg').value;
+                let input =<HTMLInputElement>document.getElementById('msg');
+                if(input.value){
+                    let msg = input.value;
                     hero.socket.talk(msg)
-                    document.getElementById('msg').value = ''
+                    input.value = ''
                 }
             }
         });
@@ -127,18 +133,31 @@ class Game extends JY {
                 case 'JOIN':{
                     let {peoples} = msg.body;
                     peoples.forEach(p=>{
-                        let h = new Hero(stage,SHAPE.circle,'images/role.png',50,100,p.x,p.y) 
-                        h.name = p.uid;
-                        this.heros.push(h);
+                        // if(p.uid == this.currentHero.name){
+                        //     this.heros.push(this.currentHero);
+                        // }else{
+                            let ishave = false;
+                            this.heros.forEach(item=>{
+                                if(item.name ==p.uid){
+                                    ishave = true;
+                                }
+                            });
+                            if(!ishave){
+                                let h = new Hero(stage,SHAPE.circle,'',21,57,p.x,p.y) 
+                                h.name = p.uid;
+                                this.heros.push(h);
+                            }
+                        // }
                     })
                     break;
                 }
                 case 'update':{
                     this.heros.forEach(p=>{
-                        if(msg.user == p.name){
-                            let {x,y} = msg.body;
+                        if(msg.user == p.name && this.currentHero.name !=msg.user){
+                            let {x,y,status} = msg.body;
                             p.x = x;
                             p.y = y;
+                            p.status = status;
                         }
                     })
                     break;
@@ -164,7 +183,7 @@ class Game extends JY {
             }
         })
         this.currentHero = hero;
-        // this.heros.push(hero);
+        this.heros.push(hero);
     }
     showHeros(){
         this.heros.forEach(item=>{
@@ -185,6 +204,14 @@ mygame.resources = [
     'images/role.png',
     'images/btn-start.png',
     'images/descript.png',
-    'audio/boom.mp3'
+    // 'audio/boom.mp3'
 ];
+for(let i = 1;i <=305;i++){
+    mygame.resources.push(`images/hero/APimg[${i}].png`);
+}
+//背景图
+// for(let i = 212;i <=216;i++){
+//     mygame.resources.push(`images/bg/GObj[${i}].png`);
+// }
+mygame.resources.push(`images/bg/bg.jpg`);
 mygame.setup()
