@@ -12,8 +12,8 @@ export default class Bg{
         let w = stage.width;
         let x =0,y =0;
         // while(x*width <stage.width && y * height <stage.height){
-            let bg = new Sprite(stage, SHAPE.rect, 'images/bg/bg.jpg', stage.width, stage.height, 0, 0)
-            this.bgList.push(bg);
+            // let bg = new Sprite(stage, SHAPE.rect, 'images/role.png', stage.width, stage.height, 0, 0)
+            // this.bgList.push(bg);
         // }
     }
     draw() {

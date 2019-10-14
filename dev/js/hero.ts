@@ -34,7 +34,8 @@ export default class Hero extends Sprite {
     socket: Socket;
     msg = '';
     timer: number;
-    content = 'images/hero/APimg[2].png';
+    content = 'images/role.png';
+    // content = 'images/hero/APimg[2].png';
     status: EStatus = EStatus.standup;
     animate = {};
     frame = 0;
@@ -42,9 +43,16 @@ export default class Hero extends Sprite {
 
     constructor(a1, a2, a3, a4, a5, a6, a7) {
         super(a1, a2, a3, a4, a5, a6, a7)
-        this.animate[EStatus.runing] = new Animate(['images/hero/APimg[10].png', 'images/hero/APimg[11].png', 'images/hero/APimg[12].png', 'images/hero/APimg[13].png']);
+        this.animate[EStatus.runing] = new Animate([
+            { content: 'images/hero/APimg[10].png',w: 20, h: 55 },
+            { content: 'images/hero/APimg[11].png',w: 38, h: 57 },
+            { content: 'images/hero/APimg[12].png',w: 49, h: 54 },
+            { content: 'images/hero/APimg[13].png',w: 43, h: 57 }
+        ]);
         this.animate[EStatus.runing].speed = 10;
-        this.animate[EStatus.standup] = new Animate(['images/hero/APimg[1].png']);
+        this.animate[EStatus.standup] = new Animate([
+            { content: 'images/hero/APimg[2].png', w: 19, h: 60 }
+        ]);
     }
     talk(msg) {
         this.msg = msg;
@@ -86,7 +94,7 @@ export default class Hero extends Sprite {
     }
     moveAnimate() {
         let direction = this.direction;
-        if (this.frame == 10 ) {
+        if (this.frame == 10) {
             this.frame = 1;
             switch (direction) {
                 case EDirection.left: {
@@ -108,11 +116,18 @@ export default class Hero extends Sprite {
             }
             this.x += this.speed.x;
             this.y += this.speed.y;
-            this.x = Math.min(Math.max(0, this.x), this.stage.width - this.width)
-            let maxy = this.stage.height / this.stage.width * 440 - this.height;
-            this.y = Math.min(Math.max(maxy, this.y), this.stage.height - this.height)
+            this.x = Math.min(Math.max(0, this.x), this.stage.realWidth - this.width)
+            let maxy = this.stage.realHeight / this.stage.realWidth * 440 - this.height;
+            this.y = Math.min(Math.max(maxy, this.y), this.stage.realHeight - this.height)
         }
         this.frame++;
+    }
+    dataUpdate(data) {
+        let { x, y, status, direction } = data;
+        this.x = x;
+        this.y = y;
+        this.direction = direction;
+        this.status = status;
     }
     stop() {
         this.status = EStatus.standup;
@@ -122,15 +137,26 @@ export default class Hero extends Sprite {
         this.socket.update(this);
     }
     draw() {
-        let name = new Sprite(this.stage, SHAPE.text, { text: this.name, font: "10px Arial" }, 100, 20, this.x, this.y - 30)
-        this.content = this.animate[this.status].play();
-        this.width = lib.caches[this.content].width;
-        this.height = lib.caches[this.content].height;
-        if(this.status == EStatus.runing){
+        let name = new Sprite(this.stage, SHAPE.text, { text: this.name, font: "10px Arial" }, 100, 20, this.x - String(this.name).length * 5 / 2, this.y - 30)
+        let play = this.animate[this.status].play();
+        this.content = play.content;
+        this.width = play.w;
+        this.height = play.h;
+        if (this.status == EStatus.runing) {
             this.moveAnimate();
         }
         name.draw();
+        let oldPos = { x: this.x, y: this.y };
+        if (EDirection.left == this.direction) {
+            this.stage.context.translate(this.stage.width + this.width / 2, 0);
+            this.x = this.stage.realWidth - this.x;
+            this.stage.context.scale(-1, 1);
+        }
         super.draw();
+        // 坐标参考还原
+        this.stage.context.setTransform(1, 0, 0, 1, 0, 0);
+        this.x = oldPos.x;
+        this.y = oldPos.y;
         this.msg && this.showMsg()
     }
     //攻击

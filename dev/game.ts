@@ -16,6 +16,8 @@ const [height, width] = [canvas.height, canvas.width]
 
 //创建舞台
 let stage = new Stage(canvas, width, height, '#FFFFFF');
+stage.realWidth = 1000;
+stage.realHeight = 1000;
 let title = new Title('弑神', stage);
 title.create = (resolve) => {
     lib.write(stage, '弑神')
@@ -27,37 +29,37 @@ descript.create = async (resolve) => {
     // await lib.waitMoment(3000);
     //添加开始按钮的Sprite
     // let btn = new Sprite(stage, SHAPE.rect, 'images/btn-start.png', 100, 40, (width - 100) / 2, height - 40 - 40);
-    let btn = new Sprite(stage, SHAPE.text, {text:'开始'}, 100, 40, (width - 100) / 2, height - 40 - 40);
+    let btn = new Sprite(stage, SHAPE.text, { text: '开始' }, 100, 40, (stage.realWidth - 100) / 2, stage.realHeight/2 - 20);
     btn.draw();
-    lib.addEventListener(stage.canvas,'touchstart',(e) => {
+    lib.addEventListener(stage.canvas, 'touchstart', (e) => {
         console.log(1111)
-        btn.touchHits(e,()=>{
+        btn.touchHits(e, () => {
             console.log(222)
-            lib.removeEventListener(stage.canvas,'touchstart')
+            lib.removeEventListener(stage.canvas, 'touchstart')
             resolve()
         })
     });
 }
 class Game extends JY {
     frame: number = 0;//帧数
-    score = 0 ;//分数
+    score = 0;//分数
     life = 10;
-    heros:Array<Hero>=[];
-    currentHero :Hero;
-    bg:Bg;
-    reset(){
-        this.score= 0 ;
+    heros: Array<Hero> = [];
+    currentHero: Hero;
+    bg: Bg;
+    reset() {
+        this.score = 0;
         this.life = 10;
     }
     newGame() {
-        this.stage.style = "#eeeeee";
+        this.stage.style = "#ffffff";
         this.bg = new Bg();
         this.bg.create(this.stage);
         this.reset();
         this.setState(STATE.running);
         this.createHero();
         //事件绑定
-        lib.addEventListener(this.stage.canvas,'touchstart',e => {
+        lib.addEventListener(this.stage.canvas, 'touchstart', e => {
             console.log(555)
             let { clientX, clientY } = e;
             console.log(clientX, clientY)
@@ -65,29 +67,29 @@ class Game extends JY {
         this.onEvent();
     }
     //绑定操作事件
-    onEvent(){
-        lib.addEventListener(window,'keyup',e =>{
+    onEvent() {
+        lib.addEventListener(window, 'keyup', e => {
             this.currentHero.stop();
         })
-        lib.addEventListener(window,'keydown',e =>{
-            switch(e.key){
+        lib.addEventListener(window, 'keydown', e => {
+            switch (e.key) {
                 case 'ArrowRight':
-                case 'd':{
+                case 'd': {
                     this.currentHero.move(EDirection.right);
                     break;
                 }
                 case 'ArrowLeft':
-                case 'a':{
+                case 'a': {
                     this.currentHero.move(EDirection.left);
                     break;
                 }
                 case 'ArrowUp':
-                case 'w':{
+                case 'w': {
                     this.currentHero.move(EDirection.up);
                     break;
                 }
                 case 'ArrowDown':
-                case 's':{
+                case 's': {
                     this.currentHero.move(EDirection.down);
                     break;
                 }
@@ -103,22 +105,22 @@ class Game extends JY {
         this.showHeros();
     }
     //显示分数信息
-    showScore(){
-        lib.write(stage, ''+this.life,10,20);
-        lib.write(stage, ''+this.score,10,50);
+    showScore() {
+        lib.write(stage, '' + this.life, 10, 20);
+        lib.write(stage, '' + this.score, 10, 50);
     }
     //创建角色
     createHero() {
         let stage = this.stage;
-        let hero = new Hero(stage,SHAPE.circle,'',21,57,stage.width/2-25,stage.height-100)
+        let hero = new Hero(stage, SHAPE.circle, '', 21, 57, stage.realWidth / 2 - 10, stage.realHeight/2 - 28)
         hero.socket = new Socket();
-        hero.socket.conect(u=>{
-            hero.name= u.uid;
+        hero.socket.conect(u => {
+            hero.name = u.uid;
             hero.socket.update(hero);
-            document.getElementById('msgcontent').style.display= 'block';
-            document.getElementById('send').onclick=()=>{
-                let input =<HTMLInputElement>document.getElementById('msg');
-                if(input.value){
+            document.getElementById('msgcontent').style.display = 'block';
+            document.getElementById('send').onclick = () => {
+                let input = <HTMLInputElement>document.getElementById('msg');
+                if (input.value) {
                     let msg = input.value;
                     hero.socket.talk(msg)
                     input.value = ''
@@ -126,55 +128,52 @@ class Game extends JY {
             }
         });
         hero.socket.joinroom(1);
-        hero.socket.listen(msg=>{
+        hero.socket.listen(msg => {
             // debugger
             // console.log(msg)
-            switch(msg.type){
-                case 'JOIN':{
-                    let {peoples} = msg.body;
-                    peoples.forEach(p=>{
+            switch (msg.type) {
+                case 'JOIN': {
+                    let { peoples } = msg.body;
+                    peoples.forEach(p => {
                         // if(p.uid == this.currentHero.name){
                         //     this.heros.push(this.currentHero);
                         // }else{
-                            let ishave = false;
-                            this.heros.forEach(item=>{
-                                if(item.name ==p.uid){
-                                    ishave = true;
-                                }
-                            });
-                            if(!ishave){
-                                let h = new Hero(stage,SHAPE.circle,'',21,57,p.x,p.y) 
-                                h.name = p.uid;
-                                this.heros.push(h);
+                        let ishave = false;
+                        this.heros.forEach(item => {
+                            if (item.name == p.uid) {
+                                ishave = true;
                             }
+                        });
+                        if (!ishave) {
+                            let h = new Hero(stage, SHAPE.circle, '', 21, 57, p.x, p.y)
+                            h.name = p.uid;
+                            this.heros.push(h);
+                        }
                         // }
                     })
                     break;
                 }
-                case 'update':{
-                    this.heros.forEach(p=>{
-                        if(msg.user == p.name && this.currentHero.name !=msg.user){
-                            let {x,y,status} = msg.body;
-                            p.x = x;
-                            p.y = y;
-                            p.status = status;
+                case 'update': {
+                    this.heros.forEach(p => {
+                        if (msg.user == p.name && this.currentHero.name != msg.user) {
+                            p.dataUpdate(msg.body);
                         }
                     })
                     break;
                 }
-                case 'LEAVE':{
-                    this.heros.forEach((item,index)=>{
+                case 'LEAVE': {
+                    this.heros.forEach((item, index) => {
                         let id = msg.body.user;
-                        if(item.name == id){
-                            this.heros.splice(index,1);
+                        if (item.name == id) {
+                            this.heros.splice(index, 1);
                         }
                     })
                     break;
                 }
-                case 'TALK':{
-                    this.heros.forEach((item,index)=>{
+                case 'TALK': {
+                    this.heros.forEach((item, index) => {
                         let id = msg.user;
-                        if(item.name == id){
+                        if (item.name == id) {
                             item.talk(msg.body)
                         }
                     })
@@ -185,8 +184,8 @@ class Game extends JY {
         this.currentHero = hero;
         this.heros.push(hero);
     }
-    showHeros(){
-        this.heros.forEach(item=>{
+    showHeros() {
+        this.heros.forEach(item => {
             item.draw();
         })
     }
@@ -206,7 +205,7 @@ mygame.resources = [
     'images/descript.png',
     // 'audio/boom.mp3'
 ];
-for(let i = 1;i <=305;i++){
+for (let i = 1; i <= 15; i++) {
     mygame.resources.push(`images/hero/APimg[${i}].png`);
 }
 //背景图

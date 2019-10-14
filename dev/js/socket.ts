@@ -6,7 +6,7 @@ import io from './socket.io.js';
 class Socket {
     socket: any;
     constructor() {
-        this.socket = io('http://localhost/');
+        this.socket = io('http://localhost:8099');
     }
     conect(func) {
         this.socket.on('connect', (c) => {
@@ -31,8 +31,8 @@ class Socket {
         this.socket.emit('join', num);
     }
     update(user:Hero){
-        let {x,y,status} =  user;
-        this.socket.emit('message',{type:'update',body:{x,y,status}})
+        let {x,y,status,direction} =  user;
+        this.socket.emit('message',{type:'update',body:{x,y,status,direction}})
     }
 }
 export default Socket;

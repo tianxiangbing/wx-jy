@@ -2,8 +2,12 @@
 import IScreen from './iScreen'
 export default class Stage {
     context: CanvasRenderingContext2D;
+    realWidth:number;
+    realHeight:number;
     constructor(public canvas:HTMLCanvasElement, public width: number, public height: number, public style?: string) {
         this.context = canvas.getContext('2d');
+        this.realHeight = this.height;
+        this.realWidth = this.width
     }
     draw(style?:string){
         this.context.fillStyle=this.style;

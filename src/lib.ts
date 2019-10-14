@@ -15,6 +15,9 @@ const lib =  {
         let context = stage.context;
         context.font = font;
         context.fillStyle = fillStyle;
+        let newPos =  this.transformPosition(stage,{x,y}) ;
+        x = newPos.x;
+        y = newPos.y;
         if (x == undefined) {
             x = (stage.width - text.length * 14) / 2;
         }
@@ -46,6 +49,9 @@ const lib =  {
         let context = stage.context;
         // let image = wx.createImage();
         let image = this.caches[img];
+        let newPos =  this.transformPosition(stage,{x:dx,y:dy}) ;
+        arguments[2] = newPos.x;
+        arguments[3] = newPos.y;
         let args = Array.prototype.slice.call(arguments, 2);
         args.unshift(image);
         // console.log('draw', img)
@@ -54,6 +60,18 @@ const lib =  {
         // } 
         // image.src = img;
         context.drawImage.call(context, ...args);
+    },
+    transformPosition(stage:Stage,{x,y}){
+        //偏移坐标系
+        let {realWidth,realHeight} = stage;
+        // if(realWidth >stage.width){
+        //     stage.context.translate()
+        // }
+        let width = realWidth/2 - stage.width/2;
+        let height = realHeight/2 - stage.height/2;
+        let newX = x-width ;
+        let newY = y-height ;
+        return {x:newX,y:newY};
     },
     //取区间数的随机值
     random(min: number, max: number) {

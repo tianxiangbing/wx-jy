@@ -67,10 +67,11 @@ export default class Sprite implements SP {
         if (!this.visible || !sp.visible)
             return false
 
-        return !!(spX >= this.x
-            && spX <= this.x + this.width
-            && spY >= this.y
-            && spY <= this.y + this.height)
+        let newPos = lib.transformPosition(this.stage,{x:this.x,y:this.y})
+        return !!(spX >= newPos.x
+            && spX <= newPos.x + this.width
+            && spY >= newPos.y
+            && spY <= newPos.y + this.height)
     }
     touchHits(e, callback?: Function) {
         let touch = e.touches[0];
