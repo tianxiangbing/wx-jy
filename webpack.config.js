@@ -1,5 +1,7 @@
 
     // console.log(process.env.mode,`111111111111111111111111111`)
+    
+var modulesDirectories = ["web_modules", "node_modules", "bower_components","src"];
 let config = {
     entry: process.env.mode == 'production' ? "./src/index.ts" : './dev/game.ts',
     output: {
@@ -11,6 +13,7 @@ let config = {
     devtool: process.env.mode == 'production' ? "none" : "source-map",
     
     resolve: {
+        modules:modulesDirectories,
         // Add '.ts' and '.tsx' as resolvable extensions.
         extensions: [".ts", ".tsx", ".js", ".json"]
     },
@@ -18,9 +21,9 @@ let config = {
     module: {
         rules: [
             // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
-            { test: /\.tsx?$/, loader: "awesome-typescript-loader" },
+            { test: /\.tsx?$/, loader: "awesome-typescript-loader",exclude:/node_modules/ },
             // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-            { enforce: "pre", test: /\.js$/, loader: "source-map-loader" }
+            { enforce: "pre", test: /\.js$/, loader: "source-map-loader" ,exclude:/node_modules/}
         ]
     }
 };

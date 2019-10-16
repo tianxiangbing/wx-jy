@@ -1,5 +1,5 @@
 import Hero from "./hero";
-import io from './socket.io.js';
+import * as io from 'socket.io-client';
 /**
  * 消息推送的处理
  */

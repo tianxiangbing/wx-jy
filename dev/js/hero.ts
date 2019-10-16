@@ -31,6 +31,7 @@ export default class Hero extends Sprite {
     speed: ISpeed = { x: 0, y: 0 };
     speedValue: number = 20;
     name: string = Math.random().toString().split('.')[1];
+    id:string;//由ws推送过来的唯一标识
     socket: Socket;
     msg = '';
     timer: number;
@@ -40,18 +41,19 @@ export default class Hero extends Sprite {
     animate = {};
     frame = 0;
     direction: EDirection;
-
+    isOwner = false;//判断是不是自己
     constructor(a1, a2, a3, a4, a5, a6, a7) {
         super(a1, a2, a3, a4, a5, a6, a7)
         this.animate[EStatus.runing] = new Animate([
-            { content: 'images/hero/APimg[10].png',w: 20, h: 55 },
-            { content: 'images/hero/APimg[11].png',w: 38, h: 57 },
-            { content: 'images/hero/APimg[12].png',w: 49, h: 54 },
-            { content: 'images/hero/APimg[13].png',w: 43, h: 57 }
+            { content: 'images/hero/APimg[10].png', w: 20, h: 55 },
+            { content: 'images/hero/APimg[11].png', w: 38, h: 57 },
+            { content: 'images/hero/APimg[12].png', w: 49, h: 54 },
+            { content: 'images/hero/APimg[13].png', w: 43, h: 57 }
         ]);
         this.animate[EStatus.runing].speed = 10;
         this.animate[EStatus.standup] = new Animate([
-            { content: 'images/hero/APimg[2].png', w: 19, h: 60 }
+            // { content: 'images/hero/APimg[2].png', w: 19, h: 60 }
+            { content: 'images/role.png', w: 19, h: 60 }
         ]);
     }
     talk(msg) {
@@ -119,6 +121,12 @@ export default class Hero extends Sprite {
             this.x = Math.min(Math.max(0, this.x), this.stage.realWidth - this.width)
             let maxy = this.stage.realHeight / this.stage.realWidth * 440 - this.height;
             this.y = Math.min(Math.max(maxy, this.y), this.stage.realHeight - this.height)
+            if (this.isOwner) {
+                let deviation = this.stage.deviation;
+                deviation = { x: deviation.x + this.speed.x, y: deviation.y + this.speed.y }
+                console.log(deviation)
+                this.stage.setDeviation(deviation);
+            }
         }
         this.frame++;
     }
@@ -149,12 +157,13 @@ export default class Hero extends Sprite {
         let oldPos = { x: this.x, y: this.y };
         if (EDirection.left == this.direction) {
             this.stage.context.translate(this.stage.width + this.width / 2, 0);
-            this.x = this.stage.realWidth - this.x;
+            // this.x = this.stage.realWidth - this.x;
             this.stage.context.scale(-1, 1);
+            super.draw();
+            this.stage.context.setTransform(1, 0, 0, 1, 0, 0);
+        }else{
+            super.draw();
         }
-        super.draw();
-        // 坐标参考还原
-        this.stage.context.setTransform(1, 0, 0, 1, 0, 0);
         this.x = oldPos.x;
         this.y = oldPos.y;
         this.msg && this.showMsg()

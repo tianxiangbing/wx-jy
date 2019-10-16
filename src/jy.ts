@@ -47,7 +47,11 @@ export default class JY {
         if (!this.ispause) {
             await this.func();
         }
-        this.aniId = requestAnimationFrame(this.loop.bind(this));
+        // setTimeout(()=>{
+            
+            this.aniId = requestAnimationFrame(this.loop.bind(this));
+        // },1000)
+        // this.aniId = requestAnimationFrame(this.loop.bind(this));
     }
     createControl() {
     }

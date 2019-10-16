@@ -43,6 +43,7 @@ const lib =  {
         for(var b = 0; b < row.length; b++){
             context.fillText(row[b],x,y+(b+1)*24);//字体20，间隔24。类似行高
         }
+        context.save();
     },
     //导入图片
     draw(stage: Stage, img: string, dx: number, dy: number, dWidth?: number, dHeight?: number, sx?: number, sy?: number, sWidth?: number, sHeight?: number) {
@@ -60,15 +61,19 @@ const lib =  {
         // } 
         // image.src = img;
         context.drawImage.call(context, ...args);
+        context.save();
+        // stage.context.translate(stage.center.x,stage.center.y);
     },
     transformPosition(stage:Stage,{x,y}){
         //偏移坐标系
-        let {realWidth,realHeight} = stage;
+        let {realWidth,realHeight,deviation} = stage;
         // if(realWidth >stage.width){
         //     stage.context.translate()
         // }
         let width = realWidth/2 - stage.width/2;
         let height = realHeight/2 - stage.height/2;
+        x = x - deviation.x;//偏离中心的值
+        y = y - deviation.y;//偏离中心的值
         let newX = x-width ;
         let newY = y-height ;
         return {x:newX,y:newY};

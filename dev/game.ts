@@ -25,11 +25,11 @@ title.create = (resolve) => {
 }
 let descript = new Descript(stage)
 descript.create = async (resolve) => {
-    lib.draw(stage, 'images/descript.png', 0, 0, stage.width, stage.height)
+    lib.draw(stage, 'images/descript.png', 0, 0, stage.realWidth, stage.realHeight)
     // await lib.waitMoment(3000);
     //添加开始按钮的Sprite
     // let btn = new Sprite(stage, SHAPE.rect, 'images/btn-start.png', 100, 40, (width - 100) / 2, height - 40 - 40);
-    let btn = new Sprite(stage, SHAPE.text, { text: '开始' }, 100, 40, (stage.realWidth - 100) / 2, stage.realHeight/2 - 20);
+    let btn = new Sprite(stage, SHAPE.text, { text: '开始' }, 100, 40, (stage.realWidth - 100) / 2, stage.realHeight / 2 - 20);
     btn.draw();
     lib.addEventListener(stage.canvas, 'touchstart', (e) => {
         console.log(1111)
@@ -47,6 +47,8 @@ class Game extends JY {
     heros: Array<Hero> = [];
     currentHero: Hero;
     bg: Bg;
+    btn:Sprite;
+    btn2:Sprite;
     reset() {
         this.score = 0;
         this.life = 10;
@@ -65,6 +67,8 @@ class Game extends JY {
             console.log(clientX, clientY)
         });
         this.onEvent();
+        
+        this.btn = new Sprite(stage, SHAPE.text, { text: '中' }, 30, 30, 500, 500);
     }
     //绑定操作事件
     onEvent() {
@@ -99,10 +103,15 @@ class Game extends JY {
     async running() {
         //先清空场景
         this.stage.clear();
-        this.bg.draw();
-        this.frame++;
-        this.showScore();
+        // this.stage.context.translate(this.stage.deviation.x, this.stage.deviation.y);
+        // this.bg.draw();
+        //画一个中心点做参照物
+        this.btn.draw();
         this.showHeros();
+        this.btn2.draw();
+        this.frame++;
+        // this.showScore();
+        // this.stage.resetDeviation();
     }
     //显示分数信息
     showScore() {
@@ -112,10 +121,11 @@ class Game extends JY {
     //创建角色
     createHero() {
         let stage = this.stage;
-        let hero = new Hero(stage, SHAPE.circle, '', 21, 57, stage.realWidth / 2 - 10, stage.realHeight/2 - 28)
+        let hero = new Hero(stage, SHAPE.circle, '', 21, 57, 500, 500)
+        hero.isOwner = true;
         hero.socket = new Socket();
         hero.socket.conect(u => {
-            hero.name = u.uid;
+            hero.id = u.uid;
             hero.socket.update(hero);
             document.getElementById('msgcontent').style.display = 'block';
             document.getElementById('send').onclick = () => {
@@ -127,6 +137,11 @@ class Game extends JY {
                 }
             }
         });
+        // let h = new Hero(stage, SHAPE.circle, '', 21, 57, 500, 400)
+        // h.id = "test";
+        // h.name = "test";
+        // this.heros.push(h);
+        this.btn2 = new Sprite(stage, SHAPE.text, { text: '心' }, 30, 30, 500, 400);
         hero.socket.joinroom(1);
         hero.socket.listen(msg => {
             // debugger
@@ -140,13 +155,13 @@ class Game extends JY {
                         // }else{
                         let ishave = false;
                         this.heros.forEach(item => {
-                            if (item.name == p.uid) {
+                            if (item.id == p.uid) {
                                 ishave = true;
                             }
                         });
                         if (!ishave) {
                             let h = new Hero(stage, SHAPE.circle, '', 21, 57, p.x, p.y)
-                            h.name = p.uid;
+                            h.id = p.uid;
                             this.heros.push(h);
                         }
                         // }
@@ -155,7 +170,7 @@ class Game extends JY {
                 }
                 case 'update': {
                     this.heros.forEach(p => {
-                        if (msg.user == p.name && this.currentHero.name != msg.user) {
+                        if (msg.user == p.id) {
                             p.dataUpdate(msg.body);
                         }
                     })
@@ -164,7 +179,7 @@ class Game extends JY {
                 case 'LEAVE': {
                     this.heros.forEach((item, index) => {
                         let id = msg.body.user;
-                        if (item.name == id) {
+                        if (item.id == id) {
                             this.heros.splice(index, 1);
                         }
                     })
@@ -173,7 +188,7 @@ class Game extends JY {
                 case 'TALK': {
                     this.heros.forEach((item, index) => {
                         let id = msg.user;
-                        if (item.name == id) {
+                        if (item.id == id) {
                             item.talk(msg.body)
                         }
                     })
@@ -182,12 +197,20 @@ class Game extends JY {
             }
         })
         this.currentHero = hero;
+
         this.heros.push(hero);
     }
     showHeros() {
         this.heros.forEach(item => {
             item.draw();
         })
+
+        // this.heros.forEach(item => {
+        //     // if(item.id != this.currentHero.id && this.currentHero.id){
+        //     item.draw();
+        //     // }
+        // })
+        // this.currentHero.draw();
     }
     async gameOver() {
         stage.clear();
