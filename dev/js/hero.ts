@@ -6,7 +6,7 @@ import {
     Sprite,
     lib
 } from '../../src/index';
-import Attack from './attack';
+import Attack, { EAttackType } from './attack';
 import Socket from './socket';
 import { SHAPE } from '../../src/sprite';
 import Animate from '../../src/animate';
@@ -25,13 +25,13 @@ enum EStatus {
     standup,
     runing = 'runing',
     jump = '',
-    attack = ''
+    attack = 'attack'
 }
 export default class Hero extends Sprite {
     speed: ISpeed = { x: 0, y: 0 };
     speedValue: number = 20;
     name: string = Math.random().toString().split('.')[1];
-    id:string;//由ws推送过来的唯一标识
+    id: string;//由ws推送过来的唯一标识
     socket: Socket;
     msg = '';
     timer: number;
@@ -42,6 +42,7 @@ export default class Hero extends Sprite {
     frame = 0;
     direction: EDirection;
     isOwner = false;//判断是不是自己
+    attackList:[Attack];//攻击元素的集合
     constructor(a1, a2, a3, a4, a5, a6, a7) {
         super(a1, a2, a3, a4, a5, a6, a7)
         this.animate[EStatus.runing] = new Animate([
@@ -131,11 +132,12 @@ export default class Hero extends Sprite {
         this.frame++;
     }
     dataUpdate(data) {
-        let { x, y, status, direction } = data;
+        let { x, y, status, direction, name } = data;
         this.x = x;
         this.y = y;
         this.direction = direction;
         this.status = status;
+        this.name = name;
     }
     stop() {
         this.status = EStatus.standup;
@@ -145,7 +147,8 @@ export default class Hero extends Sprite {
         this.socket.update(this);
     }
     draw() {
-        let name = new Sprite(this.stage, SHAPE.text, { text: this.name, font: "10px Arial" }, 100, 20, this.x - String(this.name).length * 5 / 2, this.y - 30)
+        let nw = String(this.name).length * 10;
+        let name = new Sprite(this.stage, SHAPE.text, { text: `(${this.x},${this.y})`, font: "10px Arial" }, nw, 20, this.x - 10, this.y - 30)
         let play = this.animate[this.status].play();
         this.content = play.content;
         this.width = play.w;
@@ -156,21 +159,32 @@ export default class Hero extends Sprite {
         name.draw();
         let oldPos = { x: this.x, y: this.y };
         if (EDirection.left == this.direction) {
-            this.stage.context.translate(this.stage.width + this.width / 2, 0);
+            let realPos = lib.transformPosition(this.stage, { x: this.x, y: this.y });
+            // console.log(realPos)
+            //翻转2x+width
+            this.stage.context.translate(2* realPos.x + this.width, 0);
             // this.x = this.stage.realWidth - this.x;
             this.stage.context.scale(-1, 1);
             super.draw();
             this.stage.context.setTransform(1, 0, 0, 1, 0, 0);
-        }else{
+        } else {
             super.draw();
         }
         this.x = oldPos.x;
         this.y = oldPos.y;
-        this.msg && this.showMsg()
+        this.msg && this.showMsg();
+        //显示攻击效果
+        this.attackList.forEach((item,index)=>{
+            if(!item.visible){
+                this.attackList.splice(index, 1);
+            }else{
+                item.draw();
+            }
+        })
     }
     //攻击
-    attack(attack: Attack) {
-        let a = new Attack(this.stage, SHAPE.circle, 'images/attack.png', 10, 10, this.x, this.y)
-        return a;
+    attack(attackType:EAttackType) {
+        let a = new Attack(this.stage,attackType,this.x,this.y+this.height/2,this.direction);
+        this.attackList.push(a);
     }
 }

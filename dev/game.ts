@@ -11,6 +11,7 @@ import { SHAPE } from '../src/sprite';
 import Hero, { EDirection } from './js/hero';
 import Socket from './js/socket';
 import Bg from './js/bg';
+import { EAttackType } from './js/attack';
 const canvas = lib.createCanvas();
 const [height, width] = [canvas.height, canvas.width]
 
@@ -97,6 +98,11 @@ class Game extends JY {
                     this.currentHero.move(EDirection.down);
                     break;
                 }
+                case 'j':
+                case 'x':{
+                    this.currentHero.attack(EAttackType.normal);
+                    break;
+                }
             }
         })
     }
@@ -137,10 +143,6 @@ class Game extends JY {
                 }
             }
         });
-        // let h = new Hero(stage, SHAPE.circle, '', 21, 57, 500, 400)
-        // h.id = "test";
-        // h.name = "test";
-        // this.heros.push(h);
         this.btn2 = new Sprite(stage, SHAPE.text, { text: '心' }, 30, 30, 500, 400);
         hero.socket.joinroom(1);
         hero.socket.listen(msg => {
@@ -150,9 +152,6 @@ class Game extends JY {
                 case 'JOIN': {
                     let { peoples } = msg.body;
                     peoples.forEach(p => {
-                        // if(p.uid == this.currentHero.name){
-                        //     this.heros.push(this.currentHero);
-                        // }else{
                         let ishave = false;
                         this.heros.forEach(item => {
                             if (item.id == p.uid) {
@@ -164,7 +163,6 @@ class Game extends JY {
                             h.id = p.uid;
                             this.heros.push(h);
                         }
-                        // }
                     })
                     break;
                 }
