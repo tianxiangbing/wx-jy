@@ -43,6 +43,7 @@ export default class Hero extends Sprite {
     direction: EDirection;
     isOwner = false;//判断是不是自己
     attackList:[Attack];//攻击元素的集合
+    heros:Array<Hero>;
     constructor(a1, a2, a3, a4, a5, a6, a7) {
         super(a1, a2, a3, a4, a5, a6, a7)
         this.animate[EStatus.runing] = new Animate([
@@ -179,6 +180,7 @@ export default class Hero extends Sprite {
                 this.attackList.splice(index, 1);
             }else{
                 item.draw();
+                item.checkHits(this.heros);
             }
         })
     }

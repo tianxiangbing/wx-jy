@@ -200,6 +200,7 @@ class Game extends JY {
     }
     showHeros() {
         this.heros.forEach(item => {
+            item.heros = this.heros;
             item.draw();
         })
 

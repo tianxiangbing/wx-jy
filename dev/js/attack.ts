@@ -61,4 +61,7 @@ export default class Attack extends Sprite {
         }
         super.draw();
     }
+    checkHits(heros){
+        
+    }
 }
