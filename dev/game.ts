@@ -17,8 +17,7 @@ const [height, width] = [canvas.height, canvas.width]
 
 //创建舞台
 let stage = new Stage(canvas, width, height, '#FFFFFF');
-stage.realWidth = 1000;
-stage.realHeight = 1000;
+stage.setRealWH(2000,1000);
 let title = new Title('弑神', stage);
 title.create = (resolve) => {
     lib.write(stage, '弑神')
@@ -49,7 +48,6 @@ class Game extends JY {
     currentHero: Hero;
     bg: Bg;
     btn:Sprite;
-    btn2:Sprite;
     reset() {
         this.score = 0;
         this.life = 10;
@@ -69,7 +67,7 @@ class Game extends JY {
         });
         this.onEvent();
         
-        this.btn = new Sprite(stage, SHAPE.text, { text: '中' }, 30, 30, 500, 500);
+        this.btn = new Sprite(stage, SHAPE.text, { text: '中' }, 30, 30, stage.realWidth/2, stage.realHeight/2);
     }
     //绑定操作事件
     onEvent() {
@@ -109,12 +107,11 @@ class Game extends JY {
     async running() {
         //先清空场景
         this.stage.clear();
-        // this.stage.context.translate(this.stage.deviation.x, this.stage.deviation.y);
-        // this.bg.draw();
+        this.bg.draw();
         //画一个中心点做参照物
         this.btn.draw();
+        lib.write(this.stage,`${this.stage.center.x},${this.stage.center.y}`,stage.realWidth/2, stage.realHeight/2)
         this.showHeros();
-        this.btn2.draw();
         this.frame++;
         // this.showScore();
         // this.stage.resetDeviation();
@@ -127,7 +124,7 @@ class Game extends JY {
     //创建角色
     createHero() {
         let stage = this.stage;
-        let hero = new Hero(stage, SHAPE.circle, '', 21, 57, 500, 500)
+        let hero = new Hero(stage, SHAPE.circle, '', 21, 57, stage.realWidth/2, stage.realHeight/2)
         hero.isOwner = true;
         hero.socket = new Socket();
         hero.socket.conect(u => {
@@ -143,7 +140,6 @@ class Game extends JY {
                 }
             }
         });
-        this.btn2 = new Sprite(stage, SHAPE.text, { text: '心' }, 30, 30, 500, 400);
         hero.socket.joinroom(1);
         hero.socket.listen(msg => {
             // debugger
@@ -225,6 +221,7 @@ mygame.resources = [
     'images/role.png',
     'images/btn-start.png',
     'images/descript.png',
+    'images/attack.png',
     // 'audio/boom.mp3'
 ];
 for (let i = 1; i <= 15; i++) {

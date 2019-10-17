@@ -1,6 +1,10 @@
 import { Stage } from ".";
 import Adapter from './adpater'
-const lib =  {
+interface Point {
+    x: number,
+    y: number,
+}
+const lib = {
     //暂停一段时间
     async waitMoment(second: number) {
         return new Promise(resolve => {
@@ -11,11 +15,11 @@ const lib =  {
         })
     },
     //显示文字
-    write(stage: Stage, text: string, x?: number, y?: number, font: string = "20px Arial", fillStyle: string = '#000000',w:number=stage.width) {
+    write(stage: Stage, text: string, x?: number, y?: number, font: string = "20px Arial", fillStyle: string = '#000000', w: number = stage.width) {
         let context = stage.context;
         context.font = font;
         context.fillStyle = fillStyle;
-        let newPos =  this.transformPosition(stage,{x,y}) ;
+        let newPos = this.transformPosition(stage, { x, y });
         x = newPos.x;
         y = newPos.y;
         if (x == undefined) {
@@ -27,21 +31,21 @@ const lib =  {
         }
         // console.log(text)
         var chr = String(text).split("");
-        var temp = "";              
+        var temp = "";
         var row = [];
-        for(var a = 0; a < chr.length; a++){
-            if( context.measureText(temp).width < w && context.measureText(temp+(chr[a])).width <= w){
+        for (var a = 0; a < chr.length; a++) {
+            if (context.measureText(temp).width < w && context.measureText(temp + (chr[a])).width <= w) {
                 temp += chr[a];
             }//context.measureText(text).width  测量文本text的宽度
-            else{
+            else {
                 row.push(temp);
                 temp = chr[a];
             }
         }
         row.push(temp);
-    
-        for(var b = 0; b < row.length; b++){
-            context.fillText(row[b],x,y+(b+1)*24);//字体20，间隔24。类似行高
+
+        for (var b = 0; b < row.length; b++) {
+            context.fillText(row[b], x, y + (b + 1) * 24);//字体20，间隔24。类似行高
         }
         context.save();
     },
@@ -50,7 +54,7 @@ const lib =  {
         let context = stage.context;
         // let image = wx.createImage();
         let image = this.caches[img];
-        let newPos =  this.transformPosition(stage,{x:dx,y:dy}) ;
+        let newPos = this.transformPosition(stage, { x: dx, y: dy });
         arguments[2] = newPos.x;
         arguments[3] = newPos.y;
         let args = Array.prototype.slice.call(arguments, 2);
@@ -64,19 +68,19 @@ const lib =  {
         context.save();
         // stage.context.translate(stage.center.x,stage.center.y);
     },
-    transformPosition(stage:Stage,{x,y}){
+    transformPosition(stage: Stage, { x, y }) {
         //偏移坐标系
-        let {realWidth,realHeight,deviation} = stage;
+        let { realWidth, realHeight, deviation } = stage;
         // if(realWidth >stage.width){
         //     stage.context.translate()
         // }
-        let width = realWidth/2 - stage.width/2;
-        let height = realHeight/2 - stage.height/2;
+        let width = realWidth / 2 - stage.width / 2;
+        let height = realHeight / 2 - stage.height / 2;
         x = x - deviation.x;//偏离中心的值
         y = y - deviation.y;//偏离中心的值
-        let newX = x-width ;
-        let newY = y-height ;
-        return {x:newX,y:newY};
+        let newX = x - width;
+        let newY = y - height;
+        return { x: newX, y: newY };
     },
     //取区间数的随机值
     random(min: number, max: number) {
@@ -127,24 +131,30 @@ const lib =  {
         //播放声音
         let audio = this.caches[url];
         audio.pause();
-        audio.currentTime =0 ;
+        audio.currentTime = 0;
         audio.play();
     },
-    createCanvas(){
+    createCanvas() {
         return Adapter.createCanvas();
     },
-    addEventListener(target,type,handle){
-        return Adapter.addEventListener(target,type,handle)
+    addEventListener(target, type, handle) {
+        return Adapter.addEventListener(target, type, handle)
     },
-    removeEventListener(target,type,handle?){
-        return Adapter.removeEventListener(target,type,handle)
+    removeEventListener(target, type, handle?) {
+        return Adapter.removeEventListener(target, type, handle)
     },
-    dispatchEvent(target,type){
-        return Adapter.dispatchEvent(target,type)
+    dispatchEvent(target, type) {
+        return Adapter.dispatchEvent(target, type)
+    },
+    //在某的范围内
+    innerView(rangePos: Point, target: Point, range: number) {
+        return (Math.abs(target.x - rangePos.x ) <= range
+            && Math.abs(target.y - rangePos.y) <= range
+        )
     }
 }
-let events = ['createCanvas','addEventListener','removeEventListener','dispatchEvent'];
-events.forEach(item=>{
+let events = ['createCanvas', 'addEventListener', 'removeEventListener', 'dispatchEvent'];
+events.forEach(item => {
     lib[item] = Adapter[item].bind(Adapter);
 })
 export default lib;

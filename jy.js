@@ -504,7 +504,10 @@ class JY {
             if (!this.ispause) {
                 yield this.func();
             }
+            // setTimeout(()=>{
             this.aniId = requestAnimationFrame(this.loop.bind(this));
+            // },1000)
+            // this.aniId = requestAnimationFrame(this.loop.bind(this));
         });
     }
     createControl() {
@@ -702,6 +705,9 @@ const lib = {
         let context = stage.context;
         context.font = font;
         context.fillStyle = fillStyle;
+        let newPos = this.transformPosition(stage, { x, y });
+        x = newPos.x;
+        y = newPos.y;
         if (x == undefined) {
             x = (stage.width - text.length * 14) / 2;
         }
@@ -725,12 +731,16 @@ const lib = {
         for (var b = 0; b < row.length; b++) {
             context.fillText(row[b], x, y + (b + 1) * 24); //字体20，间隔24。类似行高
         }
+        context.save();
     },
     //导入图片
     draw(stage, img, dx, dy, dWidth, dHeight, sx, sy, sWidth, sHeight) {
         let context = stage.context;
         // let image = wx.createImage();
         let image = this.caches[img];
+        let newPos = this.transformPosition(stage, { x: dx, y: dy });
+        arguments[2] = newPos.x;
+        arguments[3] = newPos.y;
         let args = Array.prototype.slice.call(arguments, 2);
         args.unshift(image);
         // console.log('draw', img)
@@ -739,6 +749,22 @@ const lib = {
         // } 
         // image.src = img;
         context.drawImage.call(context, ...args);
+        context.save();
+        // stage.context.translate(stage.center.x,stage.center.y);
+    },
+    transformPosition(stage, { x, y }) {
+        //偏移坐标系
+        let { realWidth, realHeight, deviation } = stage;
+        // if(realWidth >stage.width){
+        //     stage.context.translate()
+        // }
+        let width = realWidth / 2 - stage.width / 2;
+        let height = realHeight / 2 - stage.height / 2;
+        x = x - deviation.x; //偏离中心的值
+        y = y - deviation.y; //偏离中心的值
+        let newX = x - width;
+        let newY = y - height;
+        return { x: newX, y: newY };
     },
     //取区间数的随机值
     random(min, max) {
@@ -870,10 +896,11 @@ class Sprite {
         let spY = sp.y + sp.height / 2;
         if (!this.visible || !sp.visible)
             return false;
-        return !!(spX >= this.x
-            && spX <= this.x + this.width
-            && spY >= this.y
-            && spY <= this.y + this.height);
+        let newPos = lib_1.default.transformPosition(this.stage, { x: this.x, y: this.y });
+        return !!(spX >= newPos.x
+            && spX <= newPos.x + this.width
+            && spY >= newPos.y
+            && spY <= newPos.y + this.height);
     }
     touchHits(e, callback) {
         let touch = e.touches[0];
@@ -907,7 +934,24 @@ class Stage {
         this.width = width;
         this.height = height;
         this.style = style;
+        this.center = { x: 0, y: 0 };
+        this.deviation = { x: 0, y: 0 }; //视图偏移值
         this.context = canvas.getContext('2d');
+        this.realHeight = this.height;
+        this.realWidth = this.width;
+        this.center = { x: this.realWidth / 2, y: this.realHeight / 2 };
+    }
+    setDeviation(deviation) {
+        let { x, y } = deviation;
+        x = Math.max(Math.min(x, this.center.x), -this.center.x);
+        y = Math.max(Math.min(y, this.center.y), -this.center.y);
+        this.deviation = { x, y };
+        // this.center.x = this.deviation.x;
+        // this.center.y = this.deviation.y;
+        // this.context.translate(this.deviation.x,this.deviation.y);
+    }
+    resetDeviation() {
+        this.context.setTransform(1, 0, 0, 1, 0, 0);
     }
     draw(style) {
         this.context.fillStyle = this.style;
