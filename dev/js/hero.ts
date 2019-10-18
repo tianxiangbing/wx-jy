@@ -44,6 +44,7 @@ export default class Hero extends Sprite {
     isOwner = false;//判断是不是自己
     attackList: Array<Attack> = [];//攻击元素的集合
     heros: Array<Hero>;
+    nameSprite: Sprite;
     constructor(a1, a2, a3, a4, a5, a6, a7) {
         super(a1, a2, a3, a4, a5, a6, a7)
         this.animate[EStatus.runing] = new Animate([
@@ -54,9 +55,11 @@ export default class Hero extends Sprite {
         ]);
         this.animate[EStatus.runing].speed = 10;
         this.animate[EStatus.standup] = new Animate([
-            { content: 'images/hero/APimg[2].png', w: 19, h: 60 }
-            // { content: 'images/role.png', w: 19, h: 60 }a
+            // { content: 'images/hero/APimg[2].png', w: 19, h: 60 }
+            { content: 'images/role.png', w: 19, h: 60 }
         ]);
+        let nw = String(this.name).length * 10;
+        this.nameSprite = new Sprite(this.stage, SHAPE.text, { text: `(${this.x},${this.y})`, font: "10px Arial" }, nw, 20, this.x - 10, this.y - 30)
     }
     talk(msg) {
         this.msg = msg;
@@ -125,11 +128,12 @@ export default class Hero extends Sprite {
             this.y = Math.min(Math.max(maxy, this.y), this.stage.realHeight - this.height)
             if (this.isOwner) {
                 let deviation = this.stage.deviation;
-                let inView = lib.innerView(this.stage.RelativeCenter,this,40);
-                if(inView){
-                    deviation = { x: deviation.x + this.speed.x, y: deviation.y + this.speed.y }
-                    this.stage.setDeviation(deviation);
-                }
+                // let inView = lib.innerView(this.stage.RelativeCenter,this,40);
+                // if(inView){
+                deviation = { x: deviation.x + this.speed.x, y: deviation.y + this.speed.y }
+                this.stage.setDeviation(deviation, this);
+                this.draw()
+                // }
             }
         }
         this.frame++;
@@ -150,29 +154,33 @@ export default class Hero extends Sprite {
         this.socket.update(this);
     }
     draw() {
-        let nw = String(this.name).length * 10;
-        let name = new Sprite(this.stage, SHAPE.text, { text: `(${this.x},${this.y})`, font: "10px Arial" }, nw, 20, this.x - 10, this.y - 30)
+        if (this.status == EStatus.runing) {
+            this.moveAnimate();
+        }
+
         let play = this.animate[this.status].play();
         this.content = play.content;
         this.width = play.w;
         this.height = play.h;
-        if (this.status == EStatus.runing) {
-            this.moveAnimate();
-        }
-        name.draw();
+        this.nameSprite.y = this.y - 30;
+        this.nameSprite.x = this.x;
+        this.nameSprite.content.text = `111`;
+        this.nameSprite.draw();
         let oldPos = { x: this.x, y: this.y };
         if (EDirection.left == this.direction) {
-            let realPos = lib.transformPosition(this.stage, { x: this.x, y: this.y });
+            // let realPos = lib.transformPosition(this.stage, { x: this.x, y: this.y });
             // console.log(realPos)
             //翻转2x+width
-            this.stage.context.translate(2 * realPos.x + this.width, 0);
+            // this.stage.context.translate(2 * realPos.x + this.width, 0);
             // this.x = this.stage.realWidth - this.x;
-            this.stage.context.scale(-1, 1);
-            super.draw();
-            this.stage.context.setTransform(1, 0, 0, 1, 0, 0);
-        } else {
-            super.draw();
+            // this.stage.context.scale(-1, 1);
+            this.content = lib.imageHRevert(this.content);
+            // super.draw();
+            // this.stage.context.setTransform(1, 0, 0, 1, 0, 0);
+            // } else {
+            // super.draw();
         }
+        // super.draw();
         this.x = oldPos.x;
         this.y = oldPos.y;
         this.msg && this.showMsg();
@@ -188,6 +196,10 @@ export default class Hero extends Sprite {
     }
     //攻击
     attack(attackType: EAttackType) {
+        this.showAttack(attackType);
+        this.socket.attack({ x: this.x, y: this.y, attackType: attackType, direction: this.direction });
+    }
+    showAttack(attackType: EAttackType) {
         let a = new Attack(this.stage, attackType, this.x, this.y + this.height / 2, this.direction);
         this.attackList.push(a);
     }

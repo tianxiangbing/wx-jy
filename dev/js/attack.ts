@@ -1,6 +1,6 @@
 import { Sprite } from "../../src";
 import { SHAPE } from "../../src/sprite";
-import { EDirection } from "./hero";
+import Hero, { EDirection } from "./hero";
 
 /**
  * 攻击类型,枚举所有攻击的形式
@@ -15,12 +15,12 @@ interface ISpeed {
     y: number
 }
 export default class Attack extends Sprite {
-    speed: ISpeed={x:0,y:0};
+    speed: ISpeed = { x: 0, y: 0 };
     speedValue: number;
     distance: number;//攻击距离
-    start: ISpeed={x:0,y:0};//开始攻击的位置
+    start: ISpeed = { x: 0, y: 0 };//开始攻击的位置
     constructor(stage, public atype: EAttackType, public x: number, public y: number, public direct: EDirection) {
-        super(stage, SHAPE.rect,'',10,10)
+        super(stage, SHAPE.rect, '', 10, 10)
         switch (atype) {
             case EAttackType.normal: {
                 this.content = 'images/attack.png';
@@ -57,11 +57,13 @@ export default class Attack extends Sprite {
         this.y += this.speed.y;
         //目前只算x轴的距离 
         if (Math.abs(this.x) - Math.abs(this.start.x)) {
-            // this.visible = false;
+            this.visible = false;
         }
         super.draw();
     }
-    checkHits(heros){
-        
+    checkHits(heros: Array<Hero>) {
+        heros.forEach(hero => {
+            hero.hits(this);
+        });
     }
 }

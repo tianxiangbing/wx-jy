@@ -1,6 +1,7 @@
 //// <reference path="iScreen.ts" />
 import IScreen from './iScreen'
 import { lib } from '.';
+import Hero, { EDirection } from '../dev/js/hero';
 interface Center {
     x: number;
     y: number;
@@ -25,11 +26,14 @@ export default class Stage {
         this.center = { x: this.realWidth / 2, y: this.realHeight / 2 };
         this.RelativeCenter = { x: this.realWidth / 2, y: this.realHeight / 2 };
     }
-    setDeviation(deviation) {
-        let { x, y } = deviation;
+    //舞台的偏移量计算，以主角为中心
+    setDeviation({ x, y }, hero: Hero) {
         this.RelativeCenter = { x: this.realWidth / 2 + x, y: this.realHeight / 2 + y };
         x = Math.max(Math.min(x, this.center.x - this.width / 2), -(this.center.x - this.width / 2));
         y = Math.max(Math.min(y, this.center.y), -this.center.y);
+        if ((hero.x < this.RelativeCenter.x && hero.direction == EDirection.right) || (hero.x > this.RelativeCenter.x && hero.direction == EDirection.left)) {
+            return false;
+        }
         this.deviation = { x, y };
         // this.center.x = this.deviation.x;
         // this.center.y = this.deviation.y;

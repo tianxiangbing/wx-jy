@@ -20,6 +20,10 @@ class Socket {
     talk(msg){
         this.socket.emit('message',{type:'TALK',body:msg})
     }
+    attack(msg){
+        let actionContent = {type:'attack',...msg}
+        this.socket.emit('message',{type:'ACTION',body:actionContent})
+    }
     listen(func) {
         this.socket.on('message', msg => {
             console.log('message:', msg)

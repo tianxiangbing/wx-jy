@@ -72,7 +72,7 @@ class Game extends JY {
     //绑定操作事件
     onEvent() {
         lib.addEventListener(window, 'keyup', e => {
-            this.currentHero.stop();
+            // this.currentHero.stop();
         })
         lib.addEventListener(window, 'keydown', e => {
             switch (e.key) {
@@ -184,6 +184,17 @@ class Game extends JY {
                         let id = msg.user;
                         if (item.id == id) {
                             item.talk(msg.body)
+                        }
+                    })
+                    break;
+                }
+                case 'ACTION':{
+                    this.heros.forEach((item, index) => {
+                        let id = msg.user;
+                        if (item.id == id) {
+                            if(msg.body.type=='attack'){
+                                item.showAttack(msg.body.attackType)
+                            }
                         }
                     })
                     break;

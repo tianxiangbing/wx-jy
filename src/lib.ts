@@ -4,6 +4,7 @@ interface Point {
     x: number,
     y: number,
 }
+let prev =0;
 const lib = {
     //暂停一段时间
     async waitMoment(second: number) {
@@ -25,11 +26,9 @@ const lib = {
         if (x == undefined) {
             x = (stage.width - text.length * 14) / 2;
         }
-
         if (y == undefined) {
             y = stage.height / 2 - 15;
         }
-        // console.log(text)
         var chr = String(text).split("");
         var temp = "";
         var row = [];
@@ -47,13 +46,14 @@ const lib = {
         for (var b = 0; b < row.length; b++) {
             context.fillText(row[b], x, y + (b + 1) * 24);//字体20，间隔24。类似行高
         }
-        context.save();
+        // context.save();
     },
     //导入图片
     draw(stage: Stage, img: string, dx: number, dy: number, dWidth?: number, dHeight?: number, sx?: number, sy?: number, sWidth?: number, sHeight?: number) {
         let context = stage.context;
         // let image = wx.createImage();
-        let image = this.caches[img];
+
+        let image = typeof img == 'string' ? this.caches[img] : img;
         let newPos = this.transformPosition(stage, { x: dx, y: dy });
         arguments[2] = newPos.x;
         arguments[3] = newPos.y;
@@ -65,7 +65,7 @@ const lib = {
         // } 
         // image.src = img;
         context.drawImage.call(context, ...args);
-        context.save();
+        // context.save();
         // stage.context.translate(stage.center.x,stage.center.y);
     },
     transformPosition(stage: Stage, { x, y }) {
@@ -87,6 +87,7 @@ const lib = {
         return Math.floor(Math.random() * (max - min) + min);
     },
     caches: {},
+    Hcaches: {},//图片镜像
     loadResources(files) {
         // let cache = {};
         let arr = [];
@@ -127,6 +128,27 @@ const lib = {
             })
         })
     },
+    //取图片的镜像(横向)
+    imageHRevert(imgUrl: string) {
+        //从缓存中取出图片
+        if (!this.Hcaches[imgUrl]) {
+            let img = this.caches[imgUrl];
+            let canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            let ctx = canvas.getContext('2d');
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(img, 0, 0);
+            let newImgUrl = canvas.toDataURL('image/png');
+            let newImg = new Image();
+            newImg.src = newImgUrl
+            this.Hcaches[imgUrl] = newImg;
+            ctx = undefined;
+            canvas = undefined;
+        }
+        return this.Hcaches[imgUrl]
+    },
     play(url) {
         //播放声音
         let audio = this.caches[url];
@@ -148,7 +170,7 @@ const lib = {
     },
     //在某的范围内
     innerView(rangePos: Point, target: Point, range: number) {
-        return (Math.abs(target.x - rangePos.x ) <= range
+        return (Math.abs(target.x - rangePos.x) <= range
             && Math.abs(target.y - rangePos.y) <= range
         )
     }
