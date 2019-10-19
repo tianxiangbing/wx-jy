@@ -31,7 +31,7 @@ export default class Stage {
         this.RelativeCenter = { x: this.realWidth / 2 + x, y: this.realHeight / 2 + y };
         x = Math.max(Math.min(x, this.center.x - this.width / 2), -(this.center.x - this.width / 2));
         y = Math.max(Math.min(y, this.center.y), -this.center.y);
-        if ((hero.x < this.RelativeCenter.x && hero.direction == EDirection.right) || (hero.x > this.RelativeCenter.x && hero.direction == EDirection.left)) {
+        if ((hero.x <= this.RelativeCenter.x && hero.direction == EDirection.right) ||(hero.y <= this.RelativeCenter.y && hero.direction == EDirection.down) || (hero.x >= this.RelativeCenter.x && hero.direction == EDirection.left)) {
             return false;
         }
         this.deviation = { x, y };

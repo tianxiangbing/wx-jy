@@ -27,6 +27,7 @@ export default class Sprite implements SP {
     visible: boolean;
     // type: SHAPE = SHAPE.rect;
     r:number = 0 ;//半径
+    offsetX=0;//偏移x
     constructor(public stage: Stage,public type:SHAPE = SHAPE.rect, public content:any|string = '', width = 0, height = 0, x = 0, y = 0) {
         this.width = width
         this.height = height
@@ -56,18 +57,18 @@ export default class Sprite implements SP {
     }
 
     /**
-     * 简单的碰撞检测定义：
+     * 简单的碰撞检测定义：点检测
      * 另一个精灵的中心点处于本精灵所在的矩形内即可
      * @param{Sprite} sp: Sptite的实例
      */
-    hits(sp: any) {
+    hits(sp: any,isRelatve:boolean=false) {
         let spX = sp.x + sp.width / 2
         let spY = sp.y + sp.height / 2
 
         if (!this.visible || !sp.visible)
             return false
 
-        let newPos = lib.transformPosition(this.stage,{x:this.x,y:this.y})
+        let newPos = isRelatve ?lib.transformPosition(this.stage,{x:this.x,y:this.y}):this;
         return !!(spX >= newPos.x
             && spX <= newPos.x + this.width
             && spY >= newPos.y
@@ -75,7 +76,7 @@ export default class Sprite implements SP {
     }
     touchHits(e, callback?: Function) {
         let touch = e.touches[0];
-        if (this.hits({ x: touch.clientX, y: touch.clientY, width: 0, height: 0, visible: true })) {
+        if (this.hits({ x: touch.clientX, y: touch.clientY, width: 0, height: 0, visible: true },true)) {
             callback && callback.call(this)
         }
     }

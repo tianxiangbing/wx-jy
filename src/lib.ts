@@ -1,10 +1,11 @@
 import { Stage } from ".";
 import Adapter from './adpater'
+import Sprite from './sprite';
 interface Point {
     x: number,
     y: number,
 }
-let prev =0;
+let prev = 0;
 const lib = {
     //暂停一段时间
     async waitMoment(second: number) {
@@ -14,6 +15,32 @@ const lib = {
                 resolve();
             }, second)
         })
+    },
+    //两个spite的碰撞检测
+    hits: function (oA: Sprite, oB: Sprite, w: number = 0) {
+        w = w || 0;
+        var bx = false,
+            by = false;
+        var bw = oB.width - w;
+        var aw = oA.width - w;
+        var bh = oB.height - w;
+        var ah = oA.height - w;
+        if (oA.x > oB.x) {
+            bx = oA.x - oB.x < bw;
+        } else if (oA.x < oB.x) {
+            bx = oB.x - oA.x < aw;
+        } else {
+            bx = true;
+        };
+        if (oA.y > oB.y) {
+            by = oA.y - oB.y < bh;
+        } else if (oA.y < oB.y) {
+            by = oB.y - oA.y < ah;
+        } else {
+            by = true;
+        };
+        return (bx && by);
+        //return  (Math.abs(oA.x - oB.x) <=Math.max(oA.width,oB.width) && Math.abs(oA.y - oB.y) <= Math.max(oA.width,oB.width) )
     },
     //显示文字
     write(stage: Stage, text: string, x?: number, y?: number, font: string = "20px Arial", fillStyle: string = '#000000', w: number = stage.width) {
@@ -68,7 +95,16 @@ const lib = {
         // context.save();
         // stage.context.translate(stage.center.x,stage.center.y);
     },
-    transformPosition(stage: Stage, { x, y }) {
+    //物理坐标转换成相对舞台的坐标
+    transformRelatePosition(stage: Stage, { x, y }):Point {
+        //偏移坐标系
+        let { realWidth, realHeight, deviation ,width,height} = stage;
+        let nx = x+ (realWidth-width)/2+deviation.x;
+        let ny = y + (realHeight-height)/2 + deviation.y;
+        return {x:nx,y:ny};
+    },
+    //转换成物理坐标，用来draw
+    transformPosition(stage: Stage, { x, y }):Point {
         //偏移坐标系
         let { realWidth, realHeight, deviation } = stage;
         // if(realWidth >stage.width){
@@ -173,6 +209,30 @@ const lib = {
         return (Math.abs(target.x - rangePos.x) <= range
             && Math.abs(target.y - rangePos.y) <= range
         )
+    },
+    //绘制长方形
+    drawRect(stage: Stage, fillStyle: string, width: number, height: number, x: number, y: number) {
+        let newPos = this.transformPosition(stage, { x, y });
+        let sx = newPos.x;
+        let sy = newPos.y;
+        let context = stage.context;
+        context.fillStyle = fillStyle;
+        context.fillRect(sx, sy, width, height);
+    },
+    //绘制方框
+    drawStokeRect(stage: Stage, fillStyle: string, lineWidth: number, width: number, height: number, x: number, y: number) {
+        let newPos = this.transformPosition(stage, { x, y });
+        let sx = newPos.x;
+        let sy = newPos.y;
+        let context = stage.context;
+        context.strokeStyle = fillStyle;
+        context.lineWidth = lineWidth;
+        context.strokeRect(sx, sy, width, height);
+    },
+    //最大最小范围赋值
+    getMaxMinVal(max:number,min:number,value:number):number{
+        value = Math.max(Math.min(max,value),min);
+        return value;
     }
 }
 let events = ['createCanvas', 'addEventListener', 'removeEventListener', 'dispatchEvent'];

@@ -12,26 +12,60 @@ import { SHAPE } from '../../src/sprite';
 import Animate from '../../src/animate';
 
 export enum EDirection {
-    left,
-    right,
-    up,
-    down
+    left = 0,
+    right = 1,
+    up = 0.1,
+    down = 0.2
 }
 interface ISpeed {
     x: number,
     y: number
 }
-enum EStatus {
+export enum EStatus {
     standup,
     runing = 'runing',
-    jump = '',
-    attack = 'attack'
+    jump = 'jump',
+    attack = 'attack',
+    hit = 'hit',//被击中
+    die='die',//死亡
+    lieDown ='lieDown',//躺着
 }
+//血类型
+enum EBoodType {
+    red = 'red',
+    blue = 'blue'
+}
+class Blood {
+    height = 10;
+    width = 10;
+    //max:最大值
+    //current:当前值
+    //width:宽度
+    constructor(public stage: Stage, public type: EBoodType, public x: number, public y: number, public max: number, public current: number, public roleWidth: number) {
+        this.width = this.roleWidth * 3;
+    }
+    // setValue(v){
+    //     this.current+=v;
+    //     this.current = Math.max(0, Math.min(this.max,this.current))
+    // }
+    draw(x, y, v) {
+        this.current = v;
+        this.x = x - Math.abs(this.roleWidth - this.width) / 2;
+        this.y = y - 30;
+        lib.drawStokeRect(this.stage, this.type, 2, this.width, this.height, this.x, this.y);
+        //计算血量的长度，
+        //this.max/this.width = this.current/x 
+        let bloodWidth = this.current / (this.max / this.width);
+        lib.drawRect(this.stage, this.type, bloodWidth, this.height, this.x, this.y);
+        lib.write(this.stage, `${this.current}/${this.max}`, this.x + 10, this.y - 15, '12px', '#DEDEFE')
+    }
+}
+
 export default class Hero extends Sprite {
     speed: ISpeed = { x: 0, y: 0 };
-    speedValue: number = 20;
+    speedValue: number = 3;
     name: string = Math.random().toString().split('.')[1];
-    id: string;//由ws推送过来的唯一标识
+    id: string = Math.random().toString().split('.')[1];;//由ws推送过来的唯一标识
     socket: Socket;
     msg = '';
     timer: number;
@@ -45,6 +79,13 @@ export default class Hero extends Sprite {
     attackList: Array<Attack> = [];//攻击元素的集合
     heros: Array<Hero>;
     nameSprite: Sprite;
+    killSecond = {}//技能冷却时间 
+    blood: Blood;//血条
+    blue: Blood;//蓝条
+    mana: number = 100;//法力
+    life: number = 100;//血量
+    attacking: boolean = false;//是否正在攻击中
+    aggressivity: number = 20;//攻击力量，普通攻击的
     constructor(a1, a2, a3, a4, a5, a6, a7) {
         super(a1, a2, a3, a4, a5, a6, a7)
         this.animate[EStatus.runing] = new Animate([
@@ -52,14 +93,43 @@ export default class Hero extends Sprite {
             { content: 'images/hero/APimg[11].png', w: 38, h: 57 },
             { content: 'images/hero/APimg[12].png', w: 49, h: 54 },
             { content: 'images/hero/APimg[13].png', w: 43, h: 57 }
-        ]);
-        this.animate[EStatus.runing].speed = 10;
+        ],null,this);
+        this.animate[EStatus.runing].speed = 8;
         this.animate[EStatus.standup] = new Animate([
-            // { content: 'images/hero/APimg[2].png', w: 19, h: 60 }
-            { content: 'images/role.png', w: 19, h: 60 }
-        ]);
-        let nw = String(this.name).length * 10;
-        this.nameSprite = new Sprite(this.stage, SHAPE.text, { text: `(${this.x},${this.y})`, font: "10px Arial" }, nw, 20, this.x - 10, this.y - 30)
+            { content: 'images/hero/APimg[2].png', w: 19, h: 60 }
+            // { content: 'images/role.png', w: 19, h: 60 }
+        ],null,this);
+        //被击中
+        this.animate[EStatus.hit] = new Animate([
+            { content: 'images/hero/APimg[130].png', w: 20, h: 55 },
+            // { content: 'images/hero/APimg[131].png', w: 38, h: 57 }
+        ], () => {
+            this.status = EStatus.standup;
+        },this)
+        this.animate[EStatus.die] = new Animate([
+            {content:'images/hero/APimg[180].png',w:58,h:15},
+            {content:'images/hero/APimg[183].png',w:58,h:15},
+            {content:'images/hero/APimg[183].png',w:58,h:15},
+        ],()=>{
+            //躺尸
+            this.status = EStatus.lieDown;
+        },this);
+        this.animate[EStatus.lieDown] = new Animate([
+            {content:'images/hero/APimg[184].png',w:58,h:15,y:10},
+            {content:'images/hero/APimg[184].png',w:58,h:15,y:10},
+            {content:'images/hero/APimg[184].png',w:58,h:15,y:10},
+            {content:'images/hero/APimg[184].png',w:58,h:15,y:10},
+        ],(a)=>{
+            this.visible = false;
+        },this);
+        this.animate[EStatus.lieDown].speed =20;
+        let nw = String(this.name).length * 5;
+        this.nameSprite = new Sprite(this.stage, SHAPE.text, { text: this.id, font: "10px Arial" }, nw, 20, this.x - 10, this.y - 30)
+        this.nameSprite.offsetX = Math.abs(this.nameSprite.width - this.width) / 2;
+        //初始化血条
+        this.blood = new Blood(this.stage, EBoodType.red, this.x, this.y - 10, 100, this.life, this.width);
+        //初始化蓝条
+        this.blue = new Blood(this.stage, EBoodType.blue, this.x, this.y, 100, this.mana, this.width);
     }
     talk(msg) {
         this.msg = msg;
@@ -101,59 +171,68 @@ export default class Hero extends Sprite {
     }
     moveAnimate() {
         let direction = this.direction;
-        if (this.frame == 10) {
-            this.frame = 1;
-            switch (direction) {
-                case EDirection.left: {
-                    this.speed.x = this.speedValue * -1;
-                    break;
-                }
-                case EDirection.right: {
-                    this.speed.x = this.speedValue;
-                    break;
-                }
-                case EDirection.up: {
-                    this.speed.y = this.speedValue * -1
-                    break;
-                }
-                case EDirection.down: {
-                    this.speed.y = this.speedValue;
-                    break;
-                }
+        // if (this.frame == 10) {
+        //     this.frame = 1;
+        switch (direction) {
+            case EDirection.left: {
+                this.speed.x = this.speedValue * -1;
+                break;
             }
-            this.x += this.speed.x;
-            this.y += this.speed.y;
-            this.x = Math.min(Math.max(0, this.x), this.stage.realWidth - this.width)
-            let maxy = this.stage.realHeight / this.stage.realWidth * 440 - this.height;
-            this.y = Math.min(Math.max(maxy, this.y), this.stage.realHeight - this.height)
-            if (this.isOwner) {
-                let deviation = this.stage.deviation;
-                // let inView = lib.innerView(this.stage.RelativeCenter,this,40);
-                // if(inView){
-                deviation = { x: deviation.x + this.speed.x, y: deviation.y + this.speed.y }
-                this.stage.setDeviation(deviation, this);
-                this.draw()
-                // }
+            case EDirection.right: {
+                this.speed.x = this.speedValue;
+                break;
+            }
+            case EDirection.up: {
+                this.speed.y = this.speedValue * -1
+                break;
+            }
+            case EDirection.down: {
+                this.speed.y = this.speedValue;
+                break;
             }
         }
-        this.frame++;
+        this.x += this.speed.x;
+        this.y += this.speed.y;
+        this.x = Math.min(Math.max(0, this.x), this.stage.realWidth - this.width)
+        let maxy = this.stage.realHeight / this.stage.realWidth * 440 - this.height;
+        this.y = Math.min(Math.max(maxy, this.y), this.stage.realHeight - this.height)
+        if (this.isOwner) {
+            let deviation = this.stage.deviation;
+            // let inView = lib.innerView(this.stage.RelativeCenter,this,40);
+            // if(inView){
+            deviation = { x: deviation.x + this.speed.x, y: deviation.y + this.speed.y }
+            this.stage.setDeviation(deviation, this);
+            // this.draw()
+            // }
+        }
+        // }
+        // this.frame++;
     }
     dataUpdate(data) {
-        let { x, y, status, direction, name } = data;
+        let { x, y, status, direction, name, id } = data;
         this.x = x;
         this.y = y;
         this.direction = direction;
         this.status = status;
         this.name = name;
+        this.id = id
+        this.nameSprite.width = String(this.name).length * 5;
+        this.nameSprite.content.text = this.name;
     }
     stop() {
         this.status = EStatus.standup;
         this.speed.x = 0;
         this.speed.y = 0;
-        this.frame = 0;
+        // this.frame = 0;
         this.socket.update(this);
     }
     draw() {
+        this.frame++;
+        //自动回蓝、回血
+        if (this.frame % 100 == 0) {
+            this.blue ? this.mana = lib.getMaxMinVal(this.blue.max, 0, this.mana + 1):null;
+            this.life = lib.getMaxMinVal(this.blood.max, 0, this.life + 1);
+        }
         if (this.status == EStatus.runing) {
             this.moveAnimate();
         }
@@ -162,10 +241,9 @@ export default class Hero extends Sprite {
         this.content = play.content;
         this.width = play.w;
         this.height = play.h;
-        this.nameSprite.y = this.y - 30;
-        this.nameSprite.x = this.x;
-        this.nameSprite.content.text = `111`;
-        this.nameSprite.draw();
+        //动画偏移量
+        this.x =  play.x;
+        this.y = play.y;
         let oldPos = { x: this.x, y: this.y };
         if (EDirection.left == this.direction) {
             // let realPos = lib.transformPosition(this.stage, { x: this.x, y: this.y });
@@ -180,13 +258,26 @@ export default class Hero extends Sprite {
             // } else {
             // super.draw();
         }
-        // super.draw();
+        //名字
+        this.nameSprite.y = this.y - 30;
+        this.nameSprite.x = this.x - this.nameSprite.offsetX;
+        this.nameSprite.draw();
+        //绘血量
+        this.blood.draw(this.x, this.y - 12, this.life);
+        this.blue&&this.blue.draw(this.x, this.y, this.mana)
+        super.draw();
         this.x = oldPos.x;
         this.y = oldPos.y;
         this.msg && this.showMsg();
+        this.killSecond[EAttackType.normal] > 0 && this.killSecond[EAttackType.normal]--;
+        this.killSecond[EAttackType.skill] > 0 && this.killSecond[EAttackType.skill]--;
+        // lib.write(this.stage, `攻击1的冷却时间 ：${this.killSecond[EAttackType.normal]}`, this.x, this.y - 55)
+        // lib.write(this.stage, `攻击2的冷却时间 ：${this.killSecond[EAttackType.skill]}`, this.x, this.y - 65)
         //显示攻击效果
         this.attackList.forEach((item, index) => {
+            // this.killSecond[item.atype]--;
             if (!item.visible) {
+                this.killSecond[item.atype] = 0;
                 this.attackList.splice(index, 1);
             } else {
                 item.draw();
@@ -196,11 +287,48 @@ export default class Hero extends Sprite {
     }
     //攻击
     attack(attackType: EAttackType) {
-        this.showAttack(attackType);
-        this.socket.attack({ x: this.x, y: this.y, attackType: attackType, direction: this.direction });
+        if ((!this.killSecond[attackType] || this.killSecond[attackType] <= 0)) {
+            // if(this.killSecond[attackType]>0)debugger;
+            // console.log(this.killSecond[attackType],!this.killSecond[attackType] )
+            this.showAttack(attackType);
+            this.socket.attack({ x: this.x, y: this.y, attackType: attackType, direction: this.direction });
+        }
+    }
+    //添加被击中的效果
+    setHit(aggressivity) {
+        this.status = EStatus.hit;
+        this.life =  lib.getMaxMinVal(this.blood.max, 0, this.life - aggressivity);
+    }
+    //判断生命值
+    checkLife(){
+        if(this.life <=0){
+            //死亡
+            this.die();
+        }
+    }
+    //死亡
+    die(){
+        this.status = EStatus.die;
     }
     showAttack(attackType: EAttackType) {
-        let a = new Attack(this.stage, attackType, this.x, this.y + this.height / 2, this.direction);
-        this.attackList.push(a);
+        let a = new Attack(this.stage, this, attackType, this.x + this.direction * this.width, this.y + this.height / 3, this.direction);
+        if (a.manaConsume <= this.mana) {
+            this.status = EStatus.attack;
+            this.killSecond[attackType] = a.second;//当前英雄的技能冷却时间;       
+            this.animate[this.status] = new Animate([
+                { content: 'images/hero/APimg[29].png', w: 27, h: 60 },
+                { content: 'images/hero/APimg[30].png', w: 24, h: 55 }
+            ], () => {
+                this.attacking = false;
+                this.status = EStatus.standup;
+                this.mana = lib.getMaxMinVal(this.blue.max, 0, this.mana - a.manaConsume);//费蓝
+                // this.blue.setValue(-a.manaConsume);
+                // this.mana+=-a.manaConsume;
+                // console.log(this.x,this.x +this.direction* this.width+this.direction*5)
+                this.attackList.push(a);
+            },this);
+        } else {
+            this.killSecond[attackType] = 0
+        }
     }
 }

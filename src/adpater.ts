@@ -55,7 +55,7 @@ const adapter = {
     handle(type) {
         return (event) => {
             let listeners = events[type];
-            console.log(3333,listeners)
+            // console.log(3333,listeners)
             for (var i = 0; i < listeners.length; i++) {
                 if (!isMobile) {
                     event.touches = [event];

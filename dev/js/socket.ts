@@ -35,8 +35,8 @@ class Socket {
         this.socket.emit('join', num);
     }
     update(user:Hero){
-        let {x,y,status,direction,name} =  user;
-        this.socket.emit('message',{type:'update',body:{x,y,status,direction,name}})
+        let {x,y,status,direction,name,id} =  user;
+        this.socket.emit('message',{type:'update',body:{x,y,status,direction,name,id}})
     }
 }
 export default Socket;
