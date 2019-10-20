@@ -47,6 +47,7 @@ class Game extends JY {
     score = 0;//分数
     life = 10;
     heros: Array<Hero|Rebot> = [];
+    rebots:Array<Rebot> = [];
     currentHero: Hero;
     bg: Bg;
     // btn:Sprite;
@@ -225,10 +226,17 @@ class Game extends JY {
     }
     //创建怪兽
     createRebot(){ 
-        let realPos = lib.transformRelatePosition(stage, {x:stage.width/3,y:stage.height-100})
-        let rebot = new Rebot(this.stage,SHAPE.rect,'',41,41,realPos.x,realPos.y)
-        rebot.name="幽灵"
-        this.heros.push(rebot);
+        if(this.rebots.length == 0){
+            for(let i =0;i <10;i++){
+                let x = (Math.random()*stage.realWidth).toFixed(0);
+                console.log(x,11111111)
+                let realPos = lib.transformRelatePosition(stage, {x:x,y:stage.height-100})
+                let rebot = new Rebot(this.stage,SHAPE.rect,'',41,41,x,realPos.y)
+                rebot.name="幽灵"
+                this.heros.push(rebot);
+                this.rebots.push(rebot);
+            }
+        }
     }
     showHeros() {
         this.heros.forEach((item,index) => {

@@ -49,9 +49,12 @@ export default class JY {
         }
         // setTimeout(()=>{
             
-            this.aniId = requestAnimationFrame(this.loop.bind(this));
+            // this.aniId = requestAnimationFrame(this.loop.bind(this));
         // },1000)
-        // this.aniId = requestAnimationFrame(this.loop.bind(this));
+        this.aniId = requestAnimationFrame(this.loop.bind(this));
+        // this.aniId = setInterval(async ()=>{
+        //     await this.func(this);
+        // },1000/60);
     }
     createControl() {
     }
