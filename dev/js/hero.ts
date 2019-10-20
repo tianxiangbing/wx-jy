@@ -106,22 +106,26 @@ export default class Hero extends Sprite {
         ], () => {
             this.status = EStatus.standup;
         },this)
+        this.animate[EStatus.hit].loopNum = 10;
         this.animate[EStatus.die] = new Animate([
-            {content:'images/hero/APimg[180].png',w:58,h:15},
-            {content:'images/hero/APimg[183].png',w:58,h:15},
-            {content:'images/hero/APimg[183].png',w:58,h:15},
+            {content:'images/hero/APimg[180].png',w:58,h:15,y:1}
         ],()=>{
+        },this);
+        this.animate[EStatus.die].speed=3;
+        this.animate[EStatus.die].overCallback=()=>{
             //躺尸
             this.status = EStatus.lieDown;
-        },this);
+        }
+        this.animate[EStatus.die].loopNum =30;
         this.animate[EStatus.lieDown] = new Animate([
-            {content:'images/hero/APimg[184].png',w:58,h:15,y:10},
-            {content:'images/hero/APimg[184].png',w:58,h:15,y:10},
-            {content:'images/hero/APimg[184].png',w:58,h:15,y:10},
-            {content:'images/hero/APimg[184].png',w:58,h:15,y:10},
+            {content:'images/hero/APimg[184].png',w:58,h:15}
         ],(a)=>{
-            this.visible = false;
+            // this.visible = false;
         },this);
+        this.animate[EStatus.lieDown].loopNum =20;
+        this.animate[EStatus.lieDown].overCallback=()=>{
+            this.visible = false;
+        }
         this.animate[EStatus.lieDown].speed =20;
         let nw = String(this.name).length * 5;
         this.nameSprite = new Sprite(this.stage, SHAPE.text, { text: this.id, font: "10px Arial" }, nw, 20, this.x - 10, this.y - 30)
