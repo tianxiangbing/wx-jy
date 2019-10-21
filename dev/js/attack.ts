@@ -3,6 +3,7 @@ import { SHAPE } from "../../src/sprite";
 import Hero, { EDirection } from "./hero";
 import lib from '../../src/lib';
 import { EStatus } from './hero';
+import Rebot from "./rebot";
 
 /**
  * 攻击类型,枚举所有攻击的形式
@@ -85,10 +86,14 @@ export default class Attack extends Sprite {
         }
         super.draw();
     }
-    checkHits(heros: Array<Hero>) {
+    checkHits(heros: Array<Hero>,rebots:Array<Rebot>) {
+       this.toHits(heros);
+       this.toHits(rebots);
+    }
+    toHits(heros:Array<Hero>){
         heros.forEach(hero => {
             if (hero.id!=this.owner.id && lib.hits(this,hero)) {
-                console.log(hero.name, 'kill');
+                // console.log(hero.name, 'kill');
                 //受到的伤害=发起攻击的攻击力*技能加成
                 let aggressivity = this.owner.aggressivity *this.aggressivity;
                 hero.setHit(aggressivity);

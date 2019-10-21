@@ -64,9 +64,9 @@ class Game extends JY {
         this.createHero();
         this.createRebot();
         //事件绑定
-        lib.addEventListener(this.stage.canvas, 'touchstart', e => {
-            let { clientX, clientY } = e;
-        });
+        // lib.addEventListener(this.stage.canvas, 'touchstart', e => {
+        //     let { clientX, clientY } = e;
+        // });
         this.onEvent();
         
         // this.btn = new Sprite(stage, SHAPE.text, { text: '中' }, 30, 30, stage.realWidth/2, stage.realHeight/2);
@@ -130,6 +130,7 @@ class Game extends JY {
         // this.btn.draw();
         // lib.write(this.stage,`${this.stage.center.x},${this.stage.center.y}`,stage.realWidth/2, stage.realHeight/2)
         this.showHeros();
+        this.showRebots();
         this.frame++;
         // this.showScore();
         // this.stage.resetDeviation();
@@ -144,6 +145,8 @@ class Game extends JY {
         let stage = this.stage;
         let realPos = lib.transformRelatePosition(stage, {x:stage.width/2,y:stage.height-100})
         let hero = new Hero(stage, SHAPE.circle, '', 21, 57, realPos.x,realPos.y)
+        hero.heros = this.heros;
+        hero.rebots = this.rebots;
         hero.isOwner = true;
         hero.socket = new Socket();
         hero.socket.conect(u => {
@@ -227,23 +230,42 @@ class Game extends JY {
     //创建怪兽
     createRebot(){ 
         if(this.rebots.length == 0){
-            for(let i =0;i <10;i++){
-                let x = (Math.random()*stage.realWidth).toFixed(0);
-                console.log(x,11111111)
+            for(let i =0;i <1;i++){
+                let x = +(Math.random()*stage.realWidth).toFixed(0);
+                // console.log(x,11111111)
                 let realPos = lib.transformRelatePosition(stage, {x:x,y:stage.height-100})
                 let rebot = new Rebot(this.stage,SHAPE.rect,'',41,41,x,realPos.y)
-                rebot.name="幽灵"
-                this.heros.push(rebot);
+                rebot.name="幽灵";
+                rebot.heros = this.heros;
+                rebot.rebots = this.rebots;
+                // rebot.socket = this.currentHero.socket;
+                // this.heros.push(rebot);
                 this.rebots.push(rebot);
             }
         }
+        this.currentHero.socket.createRebots(this.rebots);
+        console.log(this.currentHero.rebots)
+        // debugger;
+    }
+    showRebots(){
+        this.rebots.forEach((item,index) => {
+            if(!item.visible){
+                this.rebots.splice(index,1);
+            }else{
+                item.draw();
+            }
+        })
     }
     showHeros() {
         this.heros.forEach((item,index) => {
             if(!item.visible){
                 this.heros.splice(index,1);
+                if(item == this.currentHero){
+                    //如果是当前角色死亡，退出重新进入
+                    this.setState(STATE.gameOver);
+                }
             }else{
-                item.heros = this.heros;
+                // item.heros = this.heros;
                 item.draw();
             }
         })
@@ -255,9 +277,14 @@ class Game extends JY {
         // })
         // this.currentHero.draw();
     }
+    unEvent(){
+        lib.removeEventListener(window, 'keyup');
+        lib.removeEventListener(window, 'keydown');
+    }
     async gameOver() {
         stage.clear();
         lib.write(stage, '游戏结束！');
+        this.unEvent();
         await lib.waitMoment(3000);
         this.reset();
         this.setState(STATE.descript);

@@ -10,6 +10,7 @@ import Attack, { EAttackType } from './attack';
 import Socket from './socket';
 import { SHAPE } from '../../src/sprite';
 import Animate from '../../src/animate';
+import Rebot from './rebot';
 
 export enum EDirection {
     left = 0,
@@ -62,6 +63,7 @@ class Blood {
 }
 
 export default class Hero extends Sprite {
+    displayName="Hero";
     speed: ISpeed = { x: 0, y: 0 };
     speedValue: number = 3;
     name: string = Math.random().toString().split('.')[1];
@@ -77,7 +79,8 @@ export default class Hero extends Sprite {
     direction: EDirection = EDirection.right;
     isOwner = false;//判断是不是自己
     attackList: Array<Attack> = [];//攻击元素的集合
-    heros: Array<Hero>;
+    heros: Array<Hero>=[];//
+    rebots:Array<Rebot>=[];
     nameSprite: Sprite;
     killSecond = {}//技能冷却时间 
     blood: Blood;//血条
@@ -86,6 +89,7 @@ export default class Hero extends Sprite {
     life: number = 100;//血量
     attacking: boolean = false;//是否正在攻击中
     aggressivity: number = 20;//攻击力量，普通攻击的
+    died:boolean = false;//是否已死亡，
     constructor(a1, a2, a3, a4, a5, a6, a7) {
         super(a1, a2, a3, a4, a5, a6, a7)
         this.animate[EStatus.runing] = new Animate([
@@ -96,8 +100,8 @@ export default class Hero extends Sprite {
         ],null,this);
         this.animate[EStatus.runing].speed = 8;
         this.animate[EStatus.standup] = new Animate([
-            { content: 'images/hero/APimg[2].png', w: 19, h: 60 }
-            // { content: 'images/role.png', w: 19, h: 60 }
+            // { content: 'images/hero/APimg[2].png', w: 19, h: 60 }
+            { content: 'images/role.png', w: 19, h: 60 }
         ],null,this);
         //被击中
         this.animate[EStatus.hit] = new Animate([
@@ -111,22 +115,22 @@ export default class Hero extends Sprite {
             {content:'images/hero/APimg[180].png',w:58,h:15,y:1}
         ],()=>{
         },this);
-        this.animate[EStatus.die].speed=3;
+        this.animate[EStatus.die].speed=1;
         this.animate[EStatus.die].overCallback=()=>{
             //躺尸
             this.status = EStatus.lieDown;
         }
-        this.animate[EStatus.die].loopNum =30;
+        this.animate[EStatus.die].loopNum =10;
         this.animate[EStatus.lieDown] = new Animate([
             {content:'images/hero/APimg[184].png',w:58,h:15}
         ],(a)=>{
             // this.visible = false;
         },this);
-        this.animate[EStatus.lieDown].loopNum =20;
+        this.animate[EStatus.lieDown].loopNum =5;
         this.animate[EStatus.lieDown].overCallback=()=>{
             this.visible = false;
         }
-        this.animate[EStatus.lieDown].speed =20;
+        this.animate[EStatus.lieDown].speed =10;
         let nw = String(this.name).length * 5;
         this.nameSprite = new Sprite(this.stage, SHAPE.text, { text: this.id, font: "10px Arial" }, nw, 20, this.x - 10, this.y - 30)
         this.nameSprite.offsetX = Math.abs(this.nameSprite.width - this.width) / 2;
@@ -150,28 +154,30 @@ export default class Hero extends Sprite {
         name.draw();
     }
     move(direction: EDirection) {
-        this.direction = direction;
-        // switch(direction){
-        //     case EDirection.left:{
-        //         this.speed.x =this.speedValue *-1;
-        //         break;
-        //     }
-        //     case EDirection.right:{
-        //         this.speed.x = this.speedValue ;
-        //         break;
-        //     }
-        //     case EDirection.up:{
-        //         this.speed.y = this.speedValue *-1
-        //         break;
-        //     }
-        //     case EDirection.down:{
-        //         this.speed.y = this.speedValue ;
-        //         break;
-        //     }
-        // }
         this.status = EStatus.runing;
-        this.draw();
-        this.socket.update(this);
+        if(this.direction !== direction){
+            this.direction = direction;
+            // switch(direction){
+            //     case EDirection.left:{
+            //         this.speed.x =this.speedValue *-1;
+            //         break;
+            //     }
+            //     case EDirection.right:{
+            //         this.speed.x = this.speedValue ;
+            //         break;
+            //     }
+            //     case EDirection.up:{
+            //         this.speed.y = this.speedValue *-1
+            //         break;
+            //     }
+            //     case EDirection.down:{
+            //         this.speed.y = this.speedValue ;
+            //         break;
+            //     }
+            // }
+            this.draw();
+            this.socket.update(this);
+        }
     }
     moveAnimate() {
         let direction = this.direction;
@@ -233,14 +239,15 @@ export default class Hero extends Sprite {
     draw() {
         this.frame++;
         //自动回蓝、回血
-        if (this.frame % 100 == 0) {
-            this.blue ? this.mana = lib.getMaxMinVal(this.blue.max, 0, this.mana + 1):null;
-            this.life = lib.getMaxMinVal(this.blood.max, 0, this.life + 1);
+        if(!this.died){
+            if (this.frame % 100 == 0) {
+                this.blue ? this.mana = lib.getMaxMinVal(this.blue.max, 0, this.mana + 1):null;
+                this.life = lib.getMaxMinVal(this.blood.max, 0, this.life + 1);
+            }
+            if (this.status == EStatus.runing) {
+                this.moveAnimate();
+            }
         }
-        if (this.status == EStatus.runing) {
-            this.moveAnimate();
-        }
-
         let play = this.animate[this.status].play();
         this.content = play.content;
         this.width = play.w;
@@ -285,16 +292,16 @@ export default class Hero extends Sprite {
                 this.attackList.splice(index, 1);
             } else {
                 item.draw();
-                item.checkHits(this.heros);
+                item.checkHits(this.heros,this.rebots);
             }
         })
     }
     //攻击
-    attack(attackType: EAttackType) {
+    attack(attackType: EAttackType,target?:Hero) {
         if ((!this.killSecond[attackType] || this.killSecond[attackType] <= 0)) {
             // if(this.killSecond[attackType]>0)debugger;
             // console.log(this.killSecond[attackType],!this.killSecond[attackType] )
-            this.showAttack(attackType);
+            this.showAttack(attackType,target);
             this.socket.attack({ x: this.x, y: this.y, attackType: attackType, direction: this.direction });
         }
     }
@@ -312,9 +319,10 @@ export default class Hero extends Sprite {
     }
     //死亡
     die(){
+        this.died = true;
         this.status = EStatus.die;
     }
-    showAttack(attackType: EAttackType) {
+    showAttack(attackType: EAttackType,target?:Hero) {
         let a = new Attack(this.stage, this, attackType, this.x + this.direction * this.width, this.y + this.height / 3, this.direction);
         if (a.manaConsume <= this.mana) {
             this.status = EStatus.attack;

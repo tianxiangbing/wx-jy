@@ -25,10 +25,12 @@ export default class Animate {
     constructor(list,public callback?:Function,public hero?:Sprite,types:Array<EAnimateType>=[]) {
         this.list = list//动画帧
         types ? this.types = types:null;
-        if(types.indexOf(EAnimateType.img) == -1 && this.list.length==0){
+        if(this.list.length==0){
             //没有图片的时候取hero的图
             this.list=[{
-                content:this.hero.content
+                content:this.hero.content,
+                w:this.hero.width,
+                h:this.hero.height
             }]
         }
     }

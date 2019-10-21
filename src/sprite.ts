@@ -20,6 +20,7 @@ interface SP {
  * 游戏基础的精灵类
  */
 export default class Sprite implements SP {
+    displayName="Sprite";
     width: number;
     height: number;
     x: number;
@@ -28,7 +29,7 @@ export default class Sprite implements SP {
     // type: SHAPE = SHAPE.rect;
     r:number = 0 ;//半径
     offsetX=0;//偏移x
-    constructor(public stage: Stage,public type:SHAPE = SHAPE.rect, public content:any|string = '', width = 0, height = 0, x = 0, y = 0) {
+    constructor(public stage: Stage,public type:SHAPE = SHAPE.rect, public content:any|string = '', width:number = 0, height:number = 0, x:number = 0, y:number = 0) {
         this.width = width
         this.height = height
         this.x = x

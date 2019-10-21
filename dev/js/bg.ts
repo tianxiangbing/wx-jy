@@ -13,13 +13,13 @@ export default class Bg{
         let w = stage.width;
         let x =0,y =0;
         let bg = new Sprite(stage, SHAPE.rect, 'images/bg/bg.jpg', stage.realWidth, stage.realHeight, 0, 0)
-        this.bgList.push(bg);
+        // this.bgList.push(bg);
         while(x*width <stage.realWidth){
             let realPos = lib.transformRelatePosition(stage, {x:x*width,y:stage.height-height});
             // console.log(realPos)
             let bg = new Sprite(stage, SHAPE.rect, 'images/bg/floor.png', width,height, x*width,realPos.y);
             x++;
-            this.bgList.push(bg);
+            // this.bgList.push(bg);
         }
     }
     draw() {
