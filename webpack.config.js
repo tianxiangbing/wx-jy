@@ -39,7 +39,7 @@ if (process.env.mode == 'development') {
         config.devServer = {
             contentBase: __dirname + "/dev",
             compress: true,
-            port: 9000,
+            port: 8888,
             hot:true
         }
     }else{

@@ -39,9 +39,15 @@ class Socket {
         this.socket.emit('message',{type:'update',body:{x,y,status,direction,name,id}})
     }
     //创建机器人后同步到服务端
-    createRebots(rebots:Array<Hero>){
+    updateRebots({to,rebots}){
         //
-        this.socket.emit('message',{})
+        this.socket.emit('message',{
+            type:'UPDATEREBOTS',
+            body:{
+                to,
+                rebots
+            }
+        })
     }
 }
 export default Socket;

@@ -62,7 +62,7 @@ class Game extends JY {
         this.reset();
         this.setState(STATE.running);
         this.createHero();
-        this.createRebot();
+        // this.createRebot();
         //事件绑定
         // lib.addEventListener(this.stage.canvas, 'touchstart', e => {
         //     let { clientX, clientY } = e;
@@ -221,6 +221,20 @@ class Game extends JY {
                     })
                     break;
                 }
+                case 'ADDREBOTS':{
+                    //没有人，收到npc数据，然后同步创建到舞台
+                    this.createRebot();
+                    break;
+                }
+                case 'GETREBOTS':{
+                    let fromUser = msg.body.from;
+                    //已有人了，通知他给我同步一下npc数据
+                    hero.socket.updateRebots({
+                            to:fromUser,
+                            rebots:this.rebots
+                    })
+                    break;
+                }
             }
         })
         this.currentHero = hero;
@@ -243,7 +257,7 @@ class Game extends JY {
                 this.rebots.push(rebot);
             }
         }
-        this.currentHero.socket.createRebots(this.rebots);
+        // this.currentHero.socket.createRebots(this.rebots);
         console.log(this.currentHero.rebots)
         // debugger;
     }
