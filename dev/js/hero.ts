@@ -30,6 +30,11 @@ export enum EStatus {
     die='die',//死亡
     lieDown ='lieDown',//躺着
 }
+export enum EMotionState{
+    standup = 'standup',
+    runing ='runing',
+    jump = 'jump',
+}
 //血类型
 enum EBoodType {
     red = 'red',
@@ -84,6 +89,7 @@ export default class Hero extends Sprite {
     blue: Blood;//蓝条
     mana: number = 100;//法力
     life: number = 100;//血量
+    isDie= false;//是否已死亡
     attacking: boolean = false;//是否正在攻击中
     aggressivity: number = 20;//攻击力量，普通攻击的
     constructor(a1, a2, a3, a4, a5, a6, a7) {
@@ -171,7 +177,7 @@ export default class Hero extends Sprite {
         // }
         this.status = EStatus.runing;
         this.draw();
-        this.socket.update(this);
+        // this.socket.update(this);
     }
     moveAnimate() {
         let direction = this.direction;
@@ -312,6 +318,7 @@ export default class Hero extends Sprite {
     }
     //死亡
     die(){
+        this.isDie = true;
         this.status = EStatus.die;
     }
     showAttack(attackType: EAttackType) {

@@ -164,6 +164,9 @@ const lib = {
             })
         })
     },
+    isMobile(){
+        return navigator.userAgent.indexOf('Mobile')>-1;
+    },
     //取图片的镜像(横向)
     imageHRevert(imgUrl: string) {
         //从缓存中取出图片

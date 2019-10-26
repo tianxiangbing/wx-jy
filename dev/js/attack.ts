@@ -87,7 +87,7 @@ export default class Attack extends Sprite {
     }
     checkHits(heros: Array<Hero>) {
         heros.forEach(hero => {
-            if (hero.id!=this.owner.id && lib.hits(this,hero)) {
+            if (!hero.isDie && hero.id!=this.owner.id && lib.hits(this,hero)) {
                 console.log(hero.name, 'kill');
                 //受到的伤害=发起攻击的攻击力*技能加成
                 let aggressivity = this.owner.aggressivity *this.aggressivity;

@@ -1,5 +1,4 @@
-import Hero from './hero';
-import { EStatus } from './hero';
+import Hero, { EStatus,EDirection } from './hero';
 import Animate from '../../src/animate';
 /**
  * 机器人
