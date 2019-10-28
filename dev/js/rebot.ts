@@ -1,5 +1,4 @@
-import Hero, { EDirection } from './hero';
-import { EStatus } from './hero';
+import Hero, { EStatus,EDirection } from './hero';
 import Animate from '../../src/animate';
 import { lib } from '../../src';
 import Attack, { EAttackType } from './attack';

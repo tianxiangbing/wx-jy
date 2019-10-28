@@ -31,6 +31,11 @@ export enum EStatus {
     die='die',//死亡
     lieDown ='lieDown',//躺着
 }
+export enum EMotionState{
+    standup = 'standup',
+    runing ='runing',
+    jump = 'jump',
+}
 //血类型
 enum EBoodType {
     red = 'red',
@@ -87,6 +92,7 @@ export default class Hero extends Sprite {
     blue: Blood;//蓝条
     mana: number = 100;//法力
     life: number = 100;//血量
+    isDie= false;//是否已死亡
     attacking: boolean = false;//是否正在攻击中
     aggressivity: number = 20;//攻击力量，普通攻击的
     died:boolean = false;//是否已死亡，

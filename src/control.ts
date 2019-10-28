@@ -3,12 +3,12 @@ import IScreen from './iScreen';
 //操作界面
 export default class Control implements IScreen {
     elem: HTMLElement;
-    rect: Array<number> = [160, 160];
+    rect: Array<number> = [140, 140];
     moveElem: HTMLElement;
     moveRect: Array<Number> = [50, 50];
     moveCenter: Array<any>;
     elemCenter: Array<any>;
-    elemPosition: Array<Number> = [10, 10];
+    elemPosition: Array<Number> = [5, 5];
     position: Array<any>;
     toPosition:Array<number>;
     private angle:number=0;//角度
@@ -16,14 +16,20 @@ export default class Control implements IScreen {
     create() {
         this.elem = document.createElement('div');
         this.elem.className = "control";
+        this.elem.style.borderRadius = '100%';
+        this.elem.style.backgroundColor = '#333';
+        this.elem.style.opacity = '0.6';
         this.elem.style.position = 'absolute';
         this.elem.style.width = this.rect[0] + 'px';
         this.elem.style.height = this.rect[1] + 'px';
         this.elem.style.left = this.elemPosition[0] + '%';
         this.elem.style.bottom = this.elemPosition[1] + '%';
+        this.elem.style.zIndex = "100";
         this.moveElem = document.createElement('div');
         this.moveElem.className = 'move';
         this.moveElem.style.position = 'absolute';
+        this.moveElem.style.borderRadius = '100%';
+        this.moveElem.style.backgroundColor = '#c7c7c7';
         this.moveElem.style.width = this.moveRect[0] + 'px';
         this.moveElem.style.height = this.moveRect[1] + 'px';
         this.elem.appendChild(this.moveElem);
@@ -31,7 +37,8 @@ export default class Control implements IScreen {
         this.elemCenter = this.rect.map(function (d: number) { return d / 2 });
         this.resetPos();
         this.bindEvent();
-        return this.elem;
+        // return this.elem;
+        document.body.appendChild(this.elem);
     }
     resetPos() {
         //重置位置
@@ -51,13 +58,19 @@ export default class Control implements IScreen {
         this.elem.addEventListener('touchstart', function (event:TouchEvent) {
             let epos = event.touches[0] || event;
             this.setPosition(epos)
+            event.stopPropagation();
+            event.preventDefault();
         }.bind(this), false);
         this.elem.addEventListener('touchmove', function (event:TouchEvent) {
             let epos = event.touches[0] || event;
             this.setPosition(epos);
+            event.stopPropagation();
+            event.preventDefault();
         }.bind(this), false);
         this.elem.addEventListener('touchend', function (event:TouchEvent) {
             this.resetPos();
+            event.stopPropagation();
+            event.preventDefault();
         }.bind(this), false);
     }
     // 计算边界值,设置位置
@@ -90,12 +103,12 @@ export default class Control implements IScreen {
         this.toPosition = [x1, y1];
         this.transPosition()
     }
+    //获取到角度
     getAngle(){
         // console.log(this.toPosition)
         this.angle = Math.atan2(this.toPosition[1],this.toPosition[0]);
         return this.angle;
     }
-    //获取到角度
     remove() {
         this.elem.parentNode.removeChild(this.elem);
     }

@@ -14,12 +14,13 @@ import Bg from './js/bg';
 import { EAttackType } from './js/attack';
 import { EStatus } from './js/hero';
 import Rebot from './js/rebot';
+import Control from '../src/control';
 const canvas = lib.createCanvas();
 const [height, width] = [canvas.height, canvas.width]
 
 //创建舞台
 let stage = new Stage(canvas, width, height, '#FFFFFF');
-stage.setRealWH(2000,1000);
+stage.setRealWH(2000, 1000);
 let title = new Title('弑神', stage);
 title.create = (resolve) => {
     lib.write(stage, '弑神')
@@ -46,10 +47,12 @@ class Game extends JY {
     frame: number = 0;//帧数
     score = 0;//分数
     life = 10;
-    heros: Array<Hero|Rebot> = [];
-    rebots:Array<Rebot> = [];
+    heros: Array<Hero | Rebot> = [];
+    rebots: Array<Rebot> = [];
     currentHero: Hero;
     bg: Bg;
+    control: Control;
+    btns: Array<Sprite> = [];
     // btn:Sprite;
     reset() {
         this.score = 0;
@@ -63,13 +66,32 @@ class Game extends JY {
         this.setState(STATE.running);
         this.createHero();
         // this.createRebot();
+        lib.isMobile() && this.createControl();
         //事件绑定
         // lib.addEventListener(this.stage.canvas, 'touchstart', e => {
         //     let { clientX, clientY } = e;
         // });
         this.onEvent();
-        
+
         // this.btn = new Sprite(stage, SHAPE.text, { text: '中' }, 30, 30, stage.realWidth/2, stage.realHeight/2);
+    }
+    //绑定控制杠
+    createControl() {
+        this.control = new Control();
+        this.control.create();
+        let { x, y } = lib.transformRelatePosition(this.stage, { x: stage.width - 70, y: this.stage.height - 70 })
+        // console.log(x, y)
+        let btn = new Sprite(stage, SHAPE.rect, 'images/attack.png', 60, 60, x, y);
+        console.log({x:btn.x,y:btn.y},{cx:btn.cx,cy:btn.cy},{ x: stage.width - 100, y: this.stage.height - 100 });
+        btn.draw();
+        this.btns.push(btn);
+        lib.addEventListener(stage.canvas, 'touchstart', (e) => {
+            console.log(1111)
+            btn.touchHits(e, () => {
+                console.log(222)
+                this.currentHero.attack(EAttackType.normal);
+            })
+        });
     }
     //绑定操作事件
     onEvent() {
@@ -82,7 +104,7 @@ class Game extends JY {
                 case 'ArrowUp':
                 case 'w':
                 case 'ArrowDown':
-                case 's':{
+                case 's': {
                     this.currentHero.status == EStatus.runing && this.currentHero.stop();
                     break;
                 }
@@ -111,11 +133,11 @@ class Game extends JY {
                 //     break;
                 // }
                 case 'j':
-                case 'x':{
+                case 'x': {
                     this.currentHero.attack(EAttackType.normal);
                     break;
                 }
-                case 'k':{
+                case 'k': {
                     this.currentHero.attack(EAttackType.skill);
                     break;
                 }
@@ -134,6 +156,34 @@ class Game extends JY {
         this.frame++;
         // this.showScore();
         // this.stage.resetDeviation();
+        lib.isMobile() && this.move();
+        this.drawbtn();
+    }
+    drawbtn() {
+        this.btns.forEach(item => {
+            // let newPos = lib.transformPosition(this.stage,{x:item.x,y:item.y}) 
+            let { x, y } = lib.transformRelatePosition(this.stage, { x: item.cx, y: item.cy });
+            item.x = x;
+            item.y = y;
+            item.draw();
+        })
+    }
+    move() {
+        let angle = this.control.getAngle();
+        let direct = Math.cos(angle) * 1;
+        // console.log(angle,direct,1111)
+        if (direct == 1 && this.currentHero.status==EStatus.runing) {
+            this.currentHero.stop();
+            return false;
+        }
+        if (direct > 0 && direct<1) {
+            this.currentHero.move(EDirection.right);
+            return false;
+        }
+        if (direct < 0 && direct>-1) {
+            this.currentHero.move(EDirection.left);
+            return false;
+        }
     }
     //显示分数信息
     showScore() {
@@ -143,8 +193,8 @@ class Game extends JY {
     //创建角色
     createHero() {
         let stage = this.stage;
-        let realPos = lib.transformRelatePosition(stage, {x:stage.width/2,y:stage.height-100})
-        let hero = new Hero(stage, SHAPE.circle, '', 21, 57, realPos.x,realPos.y)
+        let realPos = lib.transformRelatePosition(stage, { x: stage.width / 2, y: stage.height - 100 })
+        let hero = new Hero(stage, SHAPE.circle, '', 21, 57, realPos.x, realPos.y)
         hero.heros = this.heros;
         hero.rebots = this.rebots;
         hero.isOwner = true;
@@ -210,11 +260,11 @@ class Game extends JY {
                     })
                     break;
                 }
-                case 'ACTION':{
+                case 'ACTION': {
                     this.heros.forEach((item, index) => {
                         let id = msg.user;
                         if (item.id == id) {
-                            if(msg.body.type=='attack'){
+                            if (msg.body.type == 'attack') {
                                 item.showAttack(msg.body.attackType)
                             }
                         }
@@ -302,6 +352,7 @@ class Game extends JY {
         await lib.waitMoment(3000);
         this.reset();
         this.setState(STATE.descript);
+        this.control.remove();
     }
 }
 

@@ -25,6 +25,8 @@ export default class Sprite implements SP {
     height: number;
     x: number;
     y: number;
+    cx:number;//物理坐标
+    cy:number;//canvas相对坐标
     visible: boolean;
     // type: SHAPE = SHAPE.rect;
     r:number = 0 ;//半径
@@ -32,8 +34,11 @@ export default class Sprite implements SP {
     constructor(public stage: Stage,public type:SHAPE = SHAPE.rect, public content:any|string = '', width:number = 0, height:number = 0, x:number = 0, y:number = 0) {
         this.width = width
         this.height = height
-        this.x = x
-        this.y = y
+        this.x = x;
+        this.y = y;
+        let cpos = lib.transformPosition(stage,{x,y});
+        this.cx = cpos.x;
+        this.cy = cpos.y;
         this.visible = true
     }
 
