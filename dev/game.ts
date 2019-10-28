@@ -162,10 +162,10 @@ class Game extends JY {
     drawbtn() {
         this.btns.forEach(item => {
             // let newPos = lib.transformPosition(this.stage,{x:item.x,y:item.y}) 
-            let { x, y } = lib.transformRelatePosition(this.stage, { x: item.cx, y: item.cy });
-            item.x = x;
-            item.y = y;
-            item.draw();
+            // let { x, y } = lib.transformRelatePosition(this.stage, { x: item.cx, y: item.cy });
+            // item.x = x;
+            // item.y = y;
+            item.drawAbsolute();
         })
     }
     move() {
@@ -273,15 +273,17 @@ class Game extends JY {
                 }
                 case 'ADDREBOTS':{
                     //没有人，收到npc数据，然后同步创建到舞台
-                    this.createRebot();
+                    let rebots = msg.body.rebots;
+                    this.createRebot(rebots);
                     break;
                 }
                 case 'GETREBOTS':{
                     let fromUser = msg.body.from;
+                    console.log(fromUser,this.currentHero.id ,this.rebots)
                     //已有人了，通知他给我同步一下npc数据
                     hero.socket.updateRebots({
                             to:fromUser,
-                            rebots:this.rebots
+                            rebots:this.rebots.map(item=>({name:item.name,id:item.id,x:item.x,y:item.y,direction:item.direction}))
                     })
                     break;
                 }
@@ -292,21 +294,22 @@ class Game extends JY {
         this.heros.push(hero);
     }
     //创建怪兽
-    createRebot(){ 
-        if(this.rebots.length == 0){
-            for(let i =0;i <1;i++){
-                let x = +(Math.random()*stage.realWidth).toFixed(0);
+    createRebot(rebots=[]){ 
+        // if(rebots.length == 0){
+            rebots.forEach(item=>{
+                // let x = +(Math.random()*stage.realWidth).toFixed(0);
                 // console.log(x,11111111)
-                let realPos = lib.transformRelatePosition(stage, {x:x,y:stage.height-100})
-                let rebot = new Rebot(this.stage,SHAPE.rect,'',41,41,x,realPos.y)
-                rebot.name="幽灵";
+                let realPos = lib.transformRelatePosition(stage, {x:item.x,y:stage.height-100})
+                let rebot = new Rebot(this.stage,SHAPE.rect,'',41,41,item.x,realPos.y)
+                rebot.name= item.name;
+                rebot.direction = item.direction;
                 rebot.heros = this.heros;
                 rebot.rebots = this.rebots;
                 // rebot.socket = this.currentHero.socket;
                 // this.heros.push(rebot);
                 this.rebots.push(rebot);
-            }
-        }
+            })
+        // }
         // this.currentHero.socket.createRebots(this.rebots);
         console.log(this.currentHero.rebots)
         // debugger;

@@ -1,3 +1,10 @@
+/*
+ * @Descripttion: 
+ * @Author: tianxiangbing
+ * @Date: 2019-10-12 14:06:56
+ * @LastEditTime: 2019-10-28 17:57:01
+ * @github: https://github.com/tianxiangbing
+ */
 /**
  * hero
  */
@@ -96,6 +103,14 @@ export default class Hero extends Sprite {
     attacking: boolean = false;//是否正在攻击中
     aggressivity: number = 20;//攻击力量，普通攻击的
     died:boolean = false;//是否已死亡，
+    level:number = 1;//英雄等级，关联计算血量、法力、攻击力,以递增1.5倍
+    experience:number=100;//升级所需要经验值，前一级的两倍
+    /**
+     * @desc: 当前经验值
+     * @param {type} 
+     * @return: 
+     */    
+    experienceValue=0;
     constructor(a1, a2, a3, a4, a5, a6, a7) {
         super(a1, a2, a3, a4, a5, a6, a7)
         this.animate[EStatus.runing] = new Animate([
@@ -144,6 +159,16 @@ export default class Hero extends Sprite {
         this.blood = new Blood(this.stage, EBoodType.red, this.x, this.y - 10, 100, this.life, this.width);
         //初始化蓝条
         this.blue = new Blood(this.stage, EBoodType.blue, this.x, this.y, 100, this.mana, this.width);
+    }
+    //获取攻击力 ,基础攻击力100*Math.Power(1.5,x)
+    getAggressivity(){
+        return this.aggressivity * Math.pow(1.5,this.level-1);
+    }
+    /**
+     * @desc: 获取经验值,怪物的经验为它当前等级的2倍
+     */
+    getExp(){
+        return this.experience * Math.pow(2,this.level-1);
     }
     talk(msg) {
         this.msg = msg;
@@ -301,6 +326,21 @@ export default class Hero extends Sprite {
                 item.checkHits(this.heros,this.rebots);
             }
         })
+        //显示经验、等级信息
+        if(this.isOwner){
+            this.drawInfo();
+        }
+    }
+    /**
+     * @desc: 显示经验、等级信息
+     * @param {type} 
+     * @return: 
+     */
+    drawInfo(){
+        let w = this.stage.width;
+        lib.drawStokeRect(this.stage,'#999999', 1, w, 5, 0,0,true);
+        lib.drawRect(this.stage,'#333', w/this.getExp()*this.experienceValue, 3, 1,1,true);
+        lib.write(this.stage,`${this.experienceValue}/${this.getExp()}`,this.stage.width/2-10,2,'12px',null,null,true)
     }
     //攻击
     attack(attackType: EAttackType,target?:Hero) {
@@ -321,6 +361,19 @@ export default class Hero extends Sprite {
         if(this.life <=0){
             //死亡
             this.die();
+        }
+    }
+    /**
+     * @desc: 检查是否升级,计算经验值是否超过当前所需要的经验
+     * @param {type} 
+     * @return: 
+     */
+    checkLevel(){
+        let needExp = this.getExp();
+        if(this.experienceValue >= needExp){
+            //升级
+            this.level ++; 
+            this.experienceValue = 0;//经验清0
         }
     }
     //死亡

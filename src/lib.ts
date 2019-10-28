@@ -1,3 +1,10 @@
+/*
+ * @Descripttion: 
+ * @Author: tianxiangbing
+ * @Date: 2019-09-25 17:55:54
+ * @LastEditTime: 2019-10-28 17:58:02
+ * @github: https://github.com/tianxiangbing
+ */
 import { Stage } from ".";
 import Adapter from './adpater'
 import Sprite from './sprite';
@@ -42,12 +49,18 @@ const lib = {
         return (bx && by);
         //return  (Math.abs(oA.x - oB.x) <=Math.max(oA.width,oB.width) && Math.abs(oA.y - oB.y) <= Math.max(oA.width,oB.width) )
     },
-    //显示文字
-    write(stage: Stage, text: string, x?: number, y?: number, font: string = "20px Arial", fillStyle: string = '#000000', w: number = stage.width) {
+    /**
+     * @desc: 显示文字
+     * @param {boolean} isAbsolute 是否是绝对定位，默认为false
+     * @param {boolean} w 文本宽度，默认为舞台的宽
+     * @return: 
+     */
+    write(stage: Stage, text: string, x?: number, y?: number, font: string = "20px Arial", fillStyle: string = '#000000', w: number = stage.width,isAbsolute= false) {
         let context = stage.context;
         context.font = font;
         context.fillStyle = fillStyle;
-        let newPos = this.transformPosition(stage, { x, y });
+        // let newPos = this.transformPosition(stage, { x, y });
+        let newPos = isAbsolute ? {x,y} : this.transformPosition(stage, { x, y });
         x = newPos.x;
         y = newPos.y;
         if (x == undefined) {
@@ -94,6 +107,20 @@ const lib = {
         context.drawImage.call(context, ...args);
         // context.save();
         // stage.context.translate(stage.center.x,stage.center.y);
+    },
+    /**
+     * @desc: 绝对定位绘制
+     * @param {type} 
+     * @return: 
+     */    
+    drawAbsolute(stage: Stage, img: string, dx: number, dy: number, dWidth?: number, dHeight?: number, sx?: number, sy?: number, sWidth?: number, sHeight?: number) {
+        let context = stage.context;
+        let image = typeof img == 'string' ? this.caches[img] : img;
+        arguments[2] = dx;
+        arguments[3] = dy;
+        let args = Array.prototype.slice.call(arguments, 2);
+        args.unshift(image);
+        context.drawImage.call(context, ...args);
     },
     //物理坐标转换成相对舞台的坐标
     transformRelatePosition(stage: Stage, { x, y }):Point {
@@ -213,18 +240,30 @@ const lib = {
             && Math.abs(target.y - rangePos.y) <= range
         )
     },
-    //绘制长方形
-    drawRect(stage: Stage, fillStyle: string, width: number, height: number, x: number, y: number) {
-        let newPos = this.transformPosition(stage, { x, y });
+    /**
+     * @desc: 绘制长方形填充
+     * @param {Stage} stage 场景 
+     * @param {String} fillStyle 填充样式 
+     * @param {boolean} isAbsolute 是否是绝对定位，默认为false
+     * @return: 
+     */    
+    drawRect(stage: Stage, fillStyle: string, width: number, height: number, x: number, y: number,isAbsolute= false) {
+        let newPos = isAbsolute ? {x,y} : this.transformPosition(stage, { x, y });
         let sx = newPos.x;
         let sy = newPos.y;
         let context = stage.context;
         context.fillStyle = fillStyle;
         context.fillRect(sx, sy, width, height);
     },
-    //绘制方框
-    drawStokeRect(stage: Stage, fillStyle: string, lineWidth: number, width: number, height: number, x: number, y: number) {
-        let newPos = this.transformPosition(stage, { x, y });
+    /**
+     * @desc: 绘制方框
+     * @param {Stage} stage 场景
+     * @param {String} fillStyle 边框样式 
+     * @param {boolean} isAbsolute 是否是绝对定位，默认为false
+     * @return: 
+     */
+    drawStokeRect(stage: Stage, fillStyle: string, lineWidth: number, width: number, height: number, x: number, y: number,isAbsolute=false) {
+        let newPos = isAbsolute ? {x,y} : this.transformPosition(stage, { x, y });
         let sx = newPos.x;
         let sy = newPos.y;
         let context = stage.context;

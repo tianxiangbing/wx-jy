@@ -1,3 +1,11 @@
+/*
+ * @Author: your name
+ * @Date: 2019-10-21 10:22:42
+ * @LastEditTime: 2019-10-28 17:12:22
+ * @LastEditors: your name
+ * @Description: In User Settings Edit
+ * @FilePath: \ts\dev\js\rebot.ts
+ */
 import Hero, { EStatus,EDirection } from './hero';
 import Animate from '../../src/animate';
 import { lib } from '../../src';
@@ -8,6 +16,7 @@ import Attack, { EAttackType } from './attack';
 export default class Rebot extends Hero {
     displayName = "Rebot";
     speedValue = 2;
+    experience=10;//经验值
     constructor(a1, a2, a3, a4, a5, a6, a7) {
         super(a1, a2, a3, a4, a5, a6, a7);
         this.content = 'images/rebot/ghost.png';

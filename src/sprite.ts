@@ -61,7 +61,13 @@ export default class Sprite implements SP {
             )
         }
     }
-
+    //以绝对位置绘制
+    drawAbsolute(){
+        let { x, y } = lib.transformRelatePosition(this.stage, { x: this.cx, y: this.cy });
+        this.x = x;
+        this.y = y;
+        this.draw()
+    }
     /**
      * 简单的碰撞检测定义：点检测
      * 另一个精灵的中心点处于本精灵所在的矩形内即可

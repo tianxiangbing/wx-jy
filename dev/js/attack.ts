@@ -1,3 +1,9 @@
+/*
+ * @Descripttion: 攻击类
+ * @Author: tianxiangbing
+ * @Date: 2019-10-12 14:10:56
+ * @LastEditTime: 2019-10-28 17:24:29
+ */
 import { Sprite } from "../../src";
 import { SHAPE } from "../../src/sprite";
 import Hero, { EDirection } from "./hero";
@@ -8,7 +14,6 @@ import Rebot from "./rebot";
 /**
  * 攻击类型,枚举所有攻击的形式
  */
-
 export enum EAttackType {
     normal,
     skill
@@ -87,18 +92,30 @@ export default class Attack extends Sprite {
         super.draw();
     }
     checkHits(heros: Array<Hero>,rebots:Array<Rebot>) {
-       this.toHits(heros);
+    //    this.toHits(heros);
        this.toHits(rebots);
     }
+    /**
+     * @name: 检测碰撞
+     * @desc: 
+     * @param {type} 
+     * @return: 
+     */    
     toHits(heros:Array<Hero>){
         heros.forEach(hero => {
             if (!hero.isDie && hero.id!=this.owner.id && lib.hits(this,hero)) {
                 // console.log(hero.name, 'kill');
                 //受到的伤害=发起攻击的攻击力*技能加成
-                let aggressivity = this.owner.aggressivity *this.aggressivity;
+                let aggressivity = this.owner.getAggressivity() *this.aggressivity;
                 hero.setHit(aggressivity);
                 this.visible=false;
                 hero.checkLife();
+                if(!hero.visible && this.owner.displayName =='Hero'){
+                    //打死后获取经验
+                    let exp = hero.getExp();
+                    this.owner.experienceValue +=exp;
+                    this.owner.checkLevel();
+                }
             }
         });
     }
