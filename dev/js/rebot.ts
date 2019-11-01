@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2019-10-21 10:22:42
- * @LastEditTime: 2019-10-28 17:12:22
- * @LastEditors: your name
+ * @LastEditTime: 2019-11-01 17:32:11
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \ts\dev\js\rebot.ts
  */
@@ -36,11 +36,12 @@ export default class Rebot extends Hero {
         this.heros.forEach(item => {
             if (lib.hits(this, item)) {
                 //遇到了,干
-                // this.attack(EAttackType.normal, item);
+                this.attack(EAttackType.normal, item);
             }
         })
     }
     showAttack(attackType: EAttackType, target?: Hero) {
+        debugger
         let a = new Attack(this.stage, this, attackType, this.x + this.direction * this.width, this.y + this.height / 3, this.direction);
         if (a.manaConsume <= this.mana) {
             this.status = EStatus.attack;
@@ -66,7 +67,8 @@ export default class Rebot extends Hero {
                 this.status = EStatus.standup;
                 //扣血
                 target.life -= this.aggressivity;
-                target.checkLife()
+                target.checkLife();
+                this.y = this.y -20;
             }
         } else {
             this.killSecond[attackType] = 0

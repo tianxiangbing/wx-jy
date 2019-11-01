@@ -2,7 +2,7 @@
  * @Descripttion: 
  * @Author: tianxiangbing
  * @Date: 2019-09-25 17:55:54
- * @LastEditTime: 2019-10-28 17:58:02
+ * @LastEditTime: 2019-11-01 14:14:45
  * @github: https://github.com/tianxiangbing
  */
 import { Stage } from ".";
@@ -63,29 +63,31 @@ const lib = {
         let newPos = isAbsolute ? {x,y} : this.transformPosition(stage, { x, y });
         x = newPos.x;
         y = newPos.y;
-        if (x == undefined) {
-            x = (stage.width - text.length * 14) / 2;
-        }
-        if (y == undefined) {
-            y = stage.height / 2 - 15;
-        }
-        var chr = String(text).split("");
-        var temp = "";
-        var row = [];
-        for (var a = 0; a < chr.length; a++) {
-            if (context.measureText(temp).width < w && context.measureText(temp + (chr[a])).width <= w) {
-                temp += chr[a];
-            }//context.measureText(text).width  测量文本text的宽度
-            else {
-                row.push(temp);
-                temp = chr[a];
-            }
-        }
-        row.push(temp);
+        console.log(y,text)
+        context.fillText(text, x, y+parseInt(font));
+        // if (x == undefined) {
+        //     x = (stage.width - text.length * 14) / 2;
+        // }
+        // if (y == undefined) {
+        //     y = stage.height / 2 - 15;
+        // }
+        // var chr = String(text).split("");
+        // var temp = "";
+        // var row = [];
+        // for (var a = 0; a < chr.length; a++) {
+        //     if (context.measureText(temp).width < w && context.measureText(temp + (chr[a])).width <= w) {
+        //         temp += chr[a];
+        //     }//context.measureText(text).width  测量文本text的宽度
+        //     else {
+        //         row.push(temp);
+        //         temp = chr[a];
+        //     }
+        // }
+        // row.push(temp);
 
-        for (var b = 0; b < row.length; b++) {
-            context.fillText(row[b], x, y + (b + 1) * 24);//字体20，间隔24。类似行高
-        }
+        // for (var b = 0; b < row.length; b++) {
+        //     context.fillText(row[b], x, y + (b + 1) * 24);//字体20，间隔24。类似行高
+        // }
         // context.save();
     },
     //导入图片

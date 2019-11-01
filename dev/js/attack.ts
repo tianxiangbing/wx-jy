@@ -2,7 +2,7 @@
  * @Descripttion: 攻击类
  * @Author: tianxiangbing
  * @Date: 2019-10-12 14:10:56
- * @LastEditTime: 2019-10-28 17:24:29
+ * @LastEditTime: 2019-11-01 15:38:26
  */
 import { Sprite } from "../../src";
 import { SHAPE } from "../../src/sprite";
@@ -110,7 +110,7 @@ export default class Attack extends Sprite {
                 hero.setHit(aggressivity);
                 this.visible=false;
                 hero.checkLife();
-                if(!hero.visible && this.owner.displayName =='Hero'){
+                if(hero.died && this.owner.displayName =='Hero'){
                     //打死后获取经验
                     let exp = hero.getExp();
                     this.owner.experienceValue +=exp;

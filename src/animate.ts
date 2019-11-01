@@ -1,3 +1,10 @@
+/*
+ * @Descripttion: 
+ * @Author: tianxiangbing
+ * @Date: 2019-10-14 09:11:58
+ * @LastEditTime: 2019-11-01 17:13:42
+ * @github: https://github.com/tianxiangbing
+ */
 import Sprite from './sprite';
 //运动的类型 ，img为切图片的切换，size为大小的变化,distance为距离的变化
 export enum EAnimateType{
@@ -56,7 +63,7 @@ export default class Animate {
             }
         }
         this.frame ++;
-        let res = Object.assign({},item,{x,y});
+        let res = Object.assign({content:this.hero.content},item,{x,y});
         if(this.loopNum ==0){
             //动画结束
             this.overCallback(this,res)

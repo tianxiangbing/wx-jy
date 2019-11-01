@@ -2,7 +2,7 @@
  * @Descripttion: 
  * @Author: tianxiangbing
  * @Date: 2019-10-12 14:06:56
- * @LastEditTime: 2019-10-28 17:57:01
+ * @LastEditTime: 2019-11-01 16:49:44
  * @github: https://github.com/tianxiangbing
  */
 /**
@@ -110,7 +110,7 @@ export default class Hero extends Sprite {
      * @param {type} 
      * @return: 
      */    
-    experienceValue=0;
+    experienceValue=50;
     constructor(a1, a2, a3, a4, a5, a6, a7) {
         super(a1, a2, a3, a4, a5, a6, a7)
         this.animate[EStatus.runing] = new Animate([
@@ -338,9 +338,9 @@ export default class Hero extends Sprite {
      */
     drawInfo(){
         let w = this.stage.width;
-        lib.drawStokeRect(this.stage,'#999999', 1, w, 5, 0,0,true);
-        lib.drawRect(this.stage,'#333', w/this.getExp()*this.experienceValue, 3, 1,1,true);
-        lib.write(this.stage,`${this.experienceValue}/${this.getExp()}`,this.stage.width/2-10,2,'12px',null,null,true)
+        lib.drawStokeRect(this.stage,'#999999', 1, w, 8, 0,0,true);
+        lib.drawRect(this.stage,'#dddddd', w/this.getExp()*this.experienceValue, 6, 1,1,true);
+        lib.write(this.stage,`${this.experienceValue}/${this.getExp()}`,this.stage.width/2-10,0,"8px",'#333',this.stage.width,true)
     }
     //攻击
     attack(attackType: EAttackType,target?:Hero) {
@@ -348,7 +348,9 @@ export default class Hero extends Sprite {
             // if(this.killSecond[attackType]>0)debugger;
             // console.log(this.killSecond[attackType],!this.killSecond[attackType] )
             this.showAttack(attackType,target);
-            this.socket.attack({ x: this.x, y: this.y, attackType: attackType, direction: this.direction });
+            if(this.isOwner){
+                this.socket.attack({ x: this.x, y: this.y, attackType: attackType, direction: this.direction });
+            }
         }
     }
     //添加被击中的效果
