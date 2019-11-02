@@ -19,7 +19,7 @@ export default class Bg{
             // console.log(realPos)
             let bg = new Sprite(stage, SHAPE.rect, 'images/bg/floor.png', width,height, x*width,realPos.y);
             x++;
-            // this.bgList.push(bg);
+            this.bgList.push(bg);
         }
     }
     draw() {

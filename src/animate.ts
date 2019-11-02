@@ -26,6 +26,7 @@ export default class Animate {
     overframe = 1;//结束的帧数
     waiteMoment=0;//动画结束后的等待
     loopNum:number=99999;//循环的次数
+    cacheLoopNum:number =1;
     overCallback:Function;//动画结束后的回调,结束条件为loopNum为0;
     puase = false;
     types:Array<EAnimateType> = [EAnimateType.img] //动画的类型，默认为图片的切换
@@ -40,6 +41,10 @@ export default class Animate {
                 h:this.hero.height
             }]
         }
+    }
+    setLoopNum(n){
+        this.loopNum = n;
+        this.cacheLoopNum = n;
     }
     play(callback?) {
         let item = this.list[this.index];
@@ -65,6 +70,7 @@ export default class Animate {
         this.frame ++;
         let res = Object.assign({content:this.hero.content},item,{x,y});
         if(this.loopNum ==0){
+            this.loopNum =this.cacheLoopNum;
             //动画结束
             this.overCallback(this,res)
         }

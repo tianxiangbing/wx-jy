@@ -302,6 +302,7 @@ class Game extends JY {
                 let realPos = lib.transformRelatePosition(stage, {x:item.x,y:stage.height-100})
                 let rebot = new Rebot(this.stage,SHAPE.rect,'',41,41,item.x,realPos.y)
                 rebot.name= item.name;
+                rebot.speedValue = 0.7;
                 rebot.direction = item.direction;
                 rebot.heros = this.heros;
                 rebot.rebots = this.rebots;

@@ -63,7 +63,7 @@ const lib = {
         let newPos = isAbsolute ? {x,y} : this.transformPosition(stage, { x, y });
         x = newPos.x;
         y = newPos.y;
-        console.log(y,text)
+        // console.log(y,text)
         context.fillText(text, x, y+parseInt(font));
         // if (x == undefined) {
         //     x = (stage.width - text.length * 14) / 2;

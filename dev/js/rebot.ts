@@ -27,6 +27,13 @@ export default class Rebot extends Hero {
         this.animate[EStatus.runing] = new Animate([
             // { content: 'images/rebot/ghost.png', w: 41, h: 41 }
         ], null, this);
+        this.animate[EStatus.hit] = new Animate([
+            { content: 'images/rebot/ghost.png', w: 41, h: 41 }
+        ], null, this);
+        this.animate[EStatus.hit].setLoopNum(2);
+        this.animate[EStatus.hit].overCallback = ()=>{
+            this.status = EStatus.runing;
+        }
         this.blue = null;
         this.status = EStatus.runing;
         this.direction = EDirection.left;
@@ -36,7 +43,7 @@ export default class Rebot extends Hero {
         this.heros.forEach(item => {
             if (lib.hits(this, item)) {
                 //遇到了,干
-                this.attack(EAttackType.normal, item);
+                // this.attack(EAttackType.normal, item);
             }
         })
     }
