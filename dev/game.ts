@@ -112,10 +112,11 @@ class Game extends JY {
             hero.socket.update(hero);
             document.getElementById('msgcontent').style.display= 'block';
             document.getElementById('send').onclick=()=>{
-                if(document.getElementById('msg').value){
-                    let msg = document.getElementById('msg').value;
+                let msgInput = document.getElementById('msg') as HTMLInputElement
+                if(msgInput.value){
+                    let msg = msgInput.value;
                     hero.socket.talk(msg)
-                    document.getElementById('msg').value = ''
+                    msgInput.value = ''
                 }
             }
         });
